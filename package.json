@@ -15,8 +15,11 @@
     "@nuxt/fonts": "^0.11.4",
     "@nuxt/icon": "^1.15.0",
     "@nuxt/image": "^1.10.0",
+    "@tailwindcss/vite": "^4.1.11",
     "eslint": "^9.31.0",
+    "maplibre-gl": "^5.6.1",
     "nuxt": "^3.17.6",
+    "tailwindcss": "^4.1.11",
     "vue": "^3.5.17",
     "vue-router": "^4.5.1"
   },

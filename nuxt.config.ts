@@ -1,4 +1,5 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+import tailwindcss from "@tailwindcss/vite";
+
 export default defineNuxtConfig({
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
@@ -17,5 +18,20 @@ export default defineNuxtConfig({
 
   future: {
     compatibilityVersion: 4,
+  },
+
+  css: ["~/assets/css/main.css", "maplibre-gl/dist/maplibre-gl.css"],
+
+  vite: {
+    plugins: [tailwindcss()],
+    optimizeDeps: {
+      include: ["maplibre-gl"],
+    },
+  },
+
+  routeRules: {
+    "/map": {
+      ssr: false,
+    },
   },
 });
