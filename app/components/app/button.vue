@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const { type = 'button', disabled } = defineProps<{
-  type?: HTMLButtonElement["type"];
+  type?: HTMLButtonElement['type'];
   disabled?: boolean;
 }>();
 </script>
@@ -9,7 +9,7 @@ const { type = 'button', disabled } = defineProps<{
   <button
     :type="type"
     :disabled="disabled"
-    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50 hover:cursor-pointer"
+    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50 hover:cursor-pointer disabled:hover:cursor-not-allowed transition-colors duration-200"
   >
     <slot />
   </button>

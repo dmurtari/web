@@ -1,6 +1,7 @@
-import type {Config} from "prettier";
+/** @import { Config } from "prettier" */
 
-const config: Config = {
+/** @type {Config} */
+const config = {
   "semi": true,
   "tabWidth": 2,
   "singleQuote": true,
