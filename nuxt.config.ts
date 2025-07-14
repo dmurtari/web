@@ -1,16 +1,10 @@
-import tailwindcss from "@tailwindcss/vite";
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineNuxtConfig({
-  compatibilityDate: "2025-05-15",
+  compatibilityDate: '2025-05-15',
   devtools: { enabled: true },
 
-  modules: [
-    "@nuxt/content",
-    "@nuxt/eslint",
-    "@nuxt/icon",
-    "@nuxt/fonts",
-    "@nuxt/image",
-  ],
+  modules: ['@nuxt/eslint', '@nuxt/icon', '@nuxt/fonts', '@nuxt/image'],
 
   typescript: {
     typeCheck: true,
@@ -20,17 +14,17 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
 
-  css: ["~/assets/css/main.css", "maplibre-gl/dist/maplibre-gl.css"],
+  css: ['~/assets/css/main.css', 'maplibre-gl/dist/maplibre-gl.css'],
 
   vite: {
     plugins: [tailwindcss()],
     optimizeDeps: {
-      include: ["maplibre-gl"],
+      include: ['maplibre-gl'],
     },
   },
 
   routeRules: {
-    "/map": {
+    '/map': {
       ssr: false,
     },
   },
