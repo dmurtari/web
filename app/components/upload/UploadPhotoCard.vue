@@ -27,10 +27,10 @@ const { getFilePreviewUrl, getHumanFileSize } = useImageUpload();
           {{ file.name }} ({{ getHumanFileSize(file.size) }})
         </span>
       </div>
-      <button type="button" class="text-red-500 hover:text-red-700" @click="emit('removeFile')">
+      <AppButton variant="danger" size="small" @click="emit('removeFile')">
         <span class="sr-only">Remove</span>
         ✕
-      </button>
+      </AppButton>
     </div>
     <div v-if="error" class="mt-2 text-xs text-red-600">
       {{ error }}
