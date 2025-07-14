@@ -172,42 +172,15 @@ onBeforeUnmount(() => {
 
       <div v-if="selectedFiles.length > 0" class="mt-6">
         <h2 class="text-lg font-semibold mb-2">Selected Images ({{ selectedFiles.length }})</h2>
-        <ul class="space-y-2">
-          <li
+        <div class="space-y-2">
+          <UploadPhotoCard
             v-for="(file, index) in selectedFiles"
             :key="index"
-            class="flex flex-col p-2 bg-gray-50 rounded"
-            :class="{ 'border border-red-300': uploadStatus.validationErrors[index] }"
-          >
-            <div class="flex items-center justify-between">
-              <div class="flex items-center">
-                <div
-                  class="w-10 h-10 bg-gray-200 mr-3 rounded flex items-center justify-center overflow-hidden"
-                >
-                  <img
-                    :src="imageUpload.getFilePreviewUrl(file)"
-                    class="object-cover w-full h-full"
-                    alt="Preview"
-                  />
-                </div>
-                <span class="text-sm text-gray-700">
-                  {{ file.name }} ({{ imageUpload.getHumanFileSize(file.size) }})
-                </span>
-              </div>
-              <button
-                type="button"
-                class="text-red-500 hover:text-red-700"
-                @click="removeFile(index)"
-              >
-                <span class="sr-only">Remove</span>
-                ✕
-              </button>
-            </div>
-            <div v-if="uploadStatus.validationErrors[index]" class="mt-2 text-xs text-red-600">
-              {{ uploadStatus.validationErrors[index] }}
-            </div>
-          </li>
-        </ul>
+            :file="file"
+            :error="uploadStatus.validationErrors[index]"
+            @removeFile="removeFile(index)"
+          />
+        </div>
       </div>
     </div>
   </div>

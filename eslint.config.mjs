@@ -16,5 +16,7 @@ export default withNuxt({
         math: 'always',
       },
     ],
+    'vue/v-on-event-hyphenation': ['warn', 'never'],
+    'vue/attribute-hyphenation': ['warn', 'never'],
   },
 });
