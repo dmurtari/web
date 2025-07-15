@@ -40,7 +40,7 @@ export const FileValidationSuccessSchema = z.object({
   filename: z.string(),
   size: z.number(),
   type: z.string(),
-  url: z.string(),
+  url: z.string().optional(),
 });
 
 export const FileValidationResultSchema = z.discriminatedUnion('success', [

@@ -6,6 +6,7 @@ import {
   UploadResponseSchema,
   FileValidationConfig,
 } from '~/types/image-upload';
+import { uploadToS3 } from '~/utils/s3-client';
 
 function validateFile(file: ServerFile): FileValidationResult {
   if (!file.filename) {
@@ -42,7 +43,6 @@ function validateFile(file: ServerFile): FileValidationResult {
     filename: file.filename,
     size: file.data.length,
     type: file.type,
-    url: `/images/${file.filename}`, // Placeholder URL
   };
 }
 
@@ -84,13 +84,17 @@ export default defineEventHandler(async (event: H3Event) => {
 
             const result = validateFile(parsedFile as ServerFile);
 
+            if (result.success) {
+              const url = await uploadToS3(file.data, file.filename || '', file.type || '');
+              result.url = url;
+            }
+
             return FileValidationResultSchema.parse(result);
-          } catch (error) {
-            console.error('File validation error:', error);
+          } catch {
             return {
               success: false,
               filename: file.filename,
-              error: 'Invalid file format',
+              error: 'Failed to upload',
             } as FileValidationResult;
           }
         }),
