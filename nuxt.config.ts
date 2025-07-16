@@ -10,10 +10,6 @@ export default defineNuxtConfig({
     typeCheck: true,
   },
 
-  future: {
-    compatibilityVersion: 4,
-  },
-
   css: ['~/assets/css/main.css', 'maplibre-gl/dist/maplibre-gl.css'],
 
   vite: {
