@@ -1,5 +1,26 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
+export function createS3Client() {
+  const runtimeConfig = useRuntimeConfig();
+
+  if (
+    !runtimeConfig.awsAccessKeyId ||
+    !runtimeConfig.awsSecretAccessKey ||
+    !runtimeConfig.r2AccountId
+  ) {
+    throw new Error('AWS credentials are not configured properly.');
+  }
+
+  return new S3Client({
+    region: 'auto',
+    endpoint: `https://${runtimeConfig.r2AccountId}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId: runtimeConfig.awsAccessKeyId,
+      secretAccessKey: runtimeConfig.awsSecretAccessKey,
+    },
+  });
+}
+
 export async function uploadToS3(
   fileBuffer: Buffer,
   filename: string,
@@ -7,23 +28,7 @@ export async function uploadToS3(
 ): Promise<string> {
   try {
     const runtimeConfig = useRuntimeConfig();
-
-    if (
-      !runtimeConfig.awsAccessKeyId ||
-      !runtimeConfig.awsSecretAccessKey ||
-      !runtimeConfig.awsRegion ||
-      !runtimeConfig.awsS3BucketName
-    ) {
-      throw new Error('AWS credentials are not configured properly.');
-    }
-
-    const s3Client = new S3Client({
-      region: runtimeConfig.awsRegion,
-      credentials: {
-        accessKeyId: runtimeConfig.awsAccessKeyId,
-        secretAccessKey: runtimeConfig.awsSecretAccessKey,
-      },
-    });
+    const s3Client = createS3Client();
 
     const key = `uploads/${Date.now()}-${filename}`;
 
@@ -36,7 +41,8 @@ export async function uploadToS3(
 
     await s3Client.send(command);
 
-    return `https://${runtimeConfig.awsS3BucketName}.s3.${runtimeConfig.awsRegion || 'us-east-1'}.amazonaws.com/${key}`;
+    const imageId = key.split('/').pop() || '';
+    return imageId;
   } catch (error) {
     console.error('S3 upload error:', error);
     throw error;

@@ -113,7 +113,7 @@ export default defineEventHandler(async (event: H3Event) => {
     const response: UploadResponse = {
       success: true,
       files: uploadResults,
-      message: 'Image upload processed successfully. Note: Files are not permanently stored yet.',
+      message: 'Image upload processed successfully.',
     };
 
     return UploadResponseSchema.parse(response);

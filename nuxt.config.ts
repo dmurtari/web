@@ -28,7 +28,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     awsAccessKeyId: process.env.NUXT_AWS_ACCESS_KEY_ID,
     awsSecretAccessKey: process.env.NUXT_AWS_SECRET_ACCESS_KEY,
-    awsRegion: process.env.NUXT_AWS_REGION,
     awsS3BucketName: process.env.NUXT_AWS_S3_BUCKET_NAME,
+    r2AccountId: process.env.NUXT_R2_ACCOUNT_ID,
   },
 });
