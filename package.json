@@ -32,6 +32,7 @@
     "eslint": "^9.31.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.1",
+    "nitro-cloudflare-dev": "^0.2.2",
     "prettier": "^3.6.2",
     "typescript": "^5.8.3",
     "vue-tsc": "^2.2.12",
