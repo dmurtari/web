@@ -1,10 +1,19 @@
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineNuxtConfig({
-  compatibilityDate: '2025-05-15',
+  compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
-  modules: ['@nuxt/eslint', '@nuxt/icon', '@nuxt/fonts', '@nuxt/image'],
+  nitro: {
+    preset: 'cloudflare_module',
+
+    cloudflare: {
+      deployConfig: true,
+      nodeCompat: true,
+    },
+  },
+
+  modules: ['@nuxt/eslint', '@nuxt/icon', '@nuxt/fonts', '@nuxt/image', 'nitro-cloudflare-dev'],
 
   typescript: {
     typeCheck: true,
@@ -30,6 +39,5 @@ export default defineNuxtConfig({
     awsSecretAccessKey: process.env.NUXT_AWS_SECRET_ACCESS_KEY,
     awsS3BucketName: process.env.NUXT_AWS_S3_BUCKET_NAME,
     r2AccountId: process.env.NUXT_R2_ACCOUNT_ID,
-    d1ApiKey: process.env.NUXT_D1_API_KEY,
   },
 });

@@ -1,0 +1,16 @@
+name = "kazusan-web"
+compatibility_date = "2023-12-01"
+main = "workers-site/index.js"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "kazusan"
+database_id = "996c482f-d842-4b7a-ac7d-f7f84e35c8c0"
+migrations_dir = "server/database/migrations"
+
+[site]
+bucket = "./public"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "kazusan-images"

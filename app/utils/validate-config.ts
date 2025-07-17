@@ -5,7 +5,6 @@ const runtimeEnvSchema = z.object({
   awsSecretAccessKey: z.string().min(1, 'AWS Secret Access Key is required'),
   awsS3BucketName: z.string().min(1, 'AWS S3 Bucket Name is required'),
   r2AccountId: z.string().min(1, 'R2 Account ID is required'),
-  d1ApiKey: z.string().min(1, 'D1 API Key is required'),
 });
 
 export type ValidatedEnvConfig = z.infer<typeof runtimeEnvSchema>;
@@ -23,7 +22,6 @@ export function validateRuntimeConfig(config: Record<string, unknown>): Validate
       awsSecretAccessKey: config.awsSecretAccessKey,
       awsS3BucketName: config.awsS3BucketName,
       r2AccountId: config.r2AccountId,
-      d1ApiKey: config.d1ApiKey,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
