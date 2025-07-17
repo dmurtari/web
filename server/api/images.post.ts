@@ -7,6 +7,7 @@ import {
   FileValidationConfig,
 } from '~/types/image-upload';
 import { uploadToS3 } from '~/utils/s3-client';
+import { PhotoService } from '../services/photoService';
 
 function validateFile(file: ServerFile): FileValidationResult {
   if (!file.filename) {
@@ -70,6 +71,9 @@ export default defineEventHandler(async (event: H3Event) => {
       );
     }
 
+    // Initialize the photo service
+    const photoService = new PhotoService(event);
+
     const uploadResults = await Promise.all(
       formData
         .filter((file) => file.name === 'image')
@@ -85,12 +89,22 @@ export default defineEventHandler(async (event: H3Event) => {
             const result = validateFile(parsedFile as ServerFile);
 
             if (result.success) {
-              const url = await uploadToS3(file.data, file.filename || '', file.type || '');
-              result.url = url;
+              const fileId = await uploadToS3(file.data, file.filename || '', file.type || '');
+              result.url = fileId;
+
+              await photoService.savePhoto({
+                id: fileId,
+                filename: fileId,
+                originalFilename: file.filename || 'unknown',
+                mimeType: file.type || 'application/octet-stream',
+                size: file.data.length,
+                // TODO: EXIF Data
+              });
             }
 
             return FileValidationResultSchema.parse(result);
-          } catch {
+          } catch (error) {
+            console.error('Error processing upload:', error);
             return {
               success: false,
               filename: file.filename,
