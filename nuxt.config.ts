@@ -30,5 +30,6 @@ export default defineNuxtConfig({
     awsSecretAccessKey: process.env.NUXT_AWS_SECRET_ACCESS_KEY,
     awsS3BucketName: process.env.NUXT_AWS_S3_BUCKET_NAME,
     r2AccountId: process.env.NUXT_R2_ACCOUNT_ID,
+    d1ApiKey: process.env.NUXT_D1_API_KEY,
   },
 });
