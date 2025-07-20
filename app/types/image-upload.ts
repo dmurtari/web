@@ -14,9 +14,7 @@ export const UploadFileSchema = z.object({
       `File too large. Maximum size is ${FileValidationConfig.MaxFileSize / (1024 * 1024)}MB`,
     ),
   type: z.enum(FileValidationConfig.AllowedMimeTypes, {
-    errorMap: () => ({
-      message: `Invalid file type. Allowed: ${FileValidationConfig.AllowedMimeTypes.join(', ')}`,
-    }),
+    message: `Invalid file type. Allowed: ${FileValidationConfig.AllowedMimeTypes.join(', ')}`,
   }),
 });
 
