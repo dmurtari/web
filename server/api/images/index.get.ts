@@ -11,6 +11,7 @@ export default defineEventHandler(async (event: H3Event) => {
 
     return {
       success: true,
+      count: photos.length,
       photos: photos.map((photo) => ({
         ...photo,
         url: `/api/images/${photo.id}`,
