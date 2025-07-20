@@ -71,7 +71,6 @@ export default defineEventHandler(async (event: H3Event) => {
       );
     }
 
-    // Initialize the photo service
     const photoService = new PhotoService(event);
 
     const uploadResults = await Promise.all(
