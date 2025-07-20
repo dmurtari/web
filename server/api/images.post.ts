@@ -6,8 +6,8 @@ import {
   UploadResponseSchema,
   FileValidationConfig,
 } from '~/types/image-upload';
-import { uploadToS3 } from '~/utils/s3-client';
-import { PhotoService } from '../services/photoService';
+import { PhotoService } from '~~/server/services/photoService';
+import { S3Service } from '~~/server/services/s3Service';
 
 function validateFile(file: ServerFile): FileValidationResult {
   if (!file.filename) {
@@ -72,6 +72,7 @@ export default defineEventHandler(async (event: H3Event) => {
     }
 
     const photoService = new PhotoService(event);
+    const s3Service = new S3Service();
 
     const uploadResults = await Promise.all(
       formData
@@ -88,7 +89,11 @@ export default defineEventHandler(async (event: H3Event) => {
             const result = validateFile(parsedFile as ServerFile);
 
             if (result.success) {
-              const fileId = await uploadToS3(file.data, file.filename || '', file.type || '');
+              const fileId = await s3Service.uploadFile(
+                file.data,
+                file.filename || '',
+                file.type || '',
+              );
               result.url = fileId;
 
               await photoService.savePhoto({
