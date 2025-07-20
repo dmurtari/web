@@ -115,6 +115,9 @@ async function handleSubmit() {
       });
 
       selectedFiles.value = [];
+      if (fileInputRef.value) {
+        fileInputRef.value.value = '';
+      }
     }
   } catch (err) {
     console.error('Upload failed:', err);
