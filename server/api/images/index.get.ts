@@ -1,5 +1,5 @@
 import type { H3Event } from 'h3';
-import { PhotoService } from '../../services/photoService';
+import { PhotoService } from '~~/server/services/photoService';
 
 /**
  * Endpoint to get all photos with their metadata

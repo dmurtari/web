@@ -1,3 +1,54 @@
+<template>
+  <div>
+    <div class="max-w-md mx-auto p-4 flex flex-col">
+      <h1 class="text-2xl font-bold mb-4">Upload Images</h1>
+      <form @submit.prevent="handleSubmit">
+        <input
+          id="image-upload"
+          ref="fileInputRef"
+          name="image-upload"
+          type="file"
+          :accept="imageUpload.allowedFileTypes"
+          class="mb-4"
+          hidden
+          multiple
+          @change="handleFileChange"
+        />
+        <div class="flex space-x-4">
+          <AppButton type="button" @click="openFileSelector"> Select Images </AppButton>
+          <AppButton type="submit" :disabled="uploadStatus.isUploading || selectedFiles.length < 1">
+            {{ uploadStatus.isUploading ? 'Uploading...' : 'Upload' }}
+          </AppButton>
+        </div>
+      </form>
+
+      <div
+        v-if="uploadStatus.isSuccess !== null"
+        class="mt-4 p-3 rounded"
+        :class="{
+          'bg-green-100 text-green-800': uploadStatus.isSuccess,
+          'bg-red-100 text-red-800': !uploadStatus.isSuccess,
+        }"
+      >
+        {{ uploadStatus.message }}
+      </div>
+
+      <div v-if="selectedFiles.length > 0" class="mt-6">
+        <h2 class="text-lg font-semibold mb-2">Selected Images ({{ selectedFiles.length }})</h2>
+        <div class="space-y-2">
+          <UploadPhotoCard
+            v-for="(file, index) in selectedFiles"
+            :key="index"
+            :file="file"
+            :error="uploadStatus.validationErrors[index]"
+            @removeFile="removeFile(index)"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 const imageUpload = useImageUpload();
 
@@ -137,54 +188,3 @@ onBeforeUnmount(() => {
   });
 });
 </script>
-
-<template>
-  <div>
-    <div class="max-w-md mx-auto p-4 flex flex-col">
-      <h1 class="text-2xl font-bold mb-4">Upload Images</h1>
-      <form @submit.prevent="handleSubmit">
-        <input
-          id="image-upload"
-          ref="fileInputRef"
-          name="image-upload"
-          type="file"
-          :accept="imageUpload.allowedFileTypes"
-          class="mb-4"
-          hidden
-          multiple
-          @change="handleFileChange"
-        />
-        <div class="flex space-x-4">
-          <AppButton type="button" @click="openFileSelector"> Select Images </AppButton>
-          <AppButton type="submit" :disabled="uploadStatus.isUploading || selectedFiles.length < 1">
-            {{ uploadStatus.isUploading ? 'Uploading...' : 'Upload' }}
-          </AppButton>
-        </div>
-      </form>
-
-      <div
-        v-if="uploadStatus.isSuccess !== null"
-        class="mt-4 p-3 rounded"
-        :class="{
-          'bg-green-100 text-green-800': uploadStatus.isSuccess,
-          'bg-red-100 text-red-800': !uploadStatus.isSuccess,
-        }"
-      >
-        {{ uploadStatus.message }}
-      </div>
-
-      <div v-if="selectedFiles.length > 0" class="mt-6">
-        <h2 class="text-lg font-semibold mb-2">Selected Images ({{ selectedFiles.length }})</h2>
-        <div class="space-y-2">
-          <UploadPhotoCard
-            v-for="(file, index) in selectedFiles"
-            :key="index"
-            :file="file"
-            :error="uploadStatus.validationErrors[index]"
-            @removeFile="removeFile(index)"
-          />
-        </div>
-      </div>
-    </div>
-  </div>
-</template>

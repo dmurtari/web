@@ -1,17 +1,3 @@
-<script setup lang="ts">
-const {
-  type = 'button',
-  variant = 'primary',
-  size = 'medium',
-  disabled = false,
-} = defineProps<{
-  type?: HTMLButtonElement['type'];
-  disabled?: boolean;
-  variant?: 'primary' | 'secondary' | 'danger' | 'transparent';
-  size?: 'small' | 'medium' | 'large';
-}>();
-</script>
-
 <template>
   <button
     :type="type"
@@ -34,3 +20,17 @@ const {
     <slot />
   </button>
 </template>
+
+<script setup lang="ts">
+const {
+  type = 'button',
+  variant = 'primary',
+  size = 'medium',
+  disabled = false,
+} = defineProps<{
+  type?: HTMLButtonElement['type'];
+  disabled?: boolean;
+  variant?: 'primary' | 'secondary' | 'danger' | 'transparent';
+  size?: 'small' | 'medium' | 'large';
+}>();
+</script>

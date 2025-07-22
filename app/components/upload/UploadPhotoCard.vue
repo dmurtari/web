@@ -1,16 +1,3 @@
-<script setup lang="ts">
-const { file, error = '' } = defineProps<{
-  file: File;
-  error?: string;
-}>();
-
-const emit = defineEmits<{
-  removeFile: [];
-}>();
-
-const { getFilePreviewUrl, getHumanFileSize } = useImageUpload();
-</script>
-
 <template>
   <div
     class="flex flex-col p-2 bg-gray-50 rounded"
@@ -37,3 +24,16 @@ const { getFilePreviewUrl, getHumanFileSize } = useImageUpload();
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+const { file, error = '' } = defineProps<{
+  file: File;
+  error?: string;
+}>();
+
+const emit = defineEmits<{
+  removeFile: [];
+}>();
+
+const { getFilePreviewUrl, getHumanFileSize } = useImageUpload();
+</script>

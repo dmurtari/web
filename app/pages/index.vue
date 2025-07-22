@@ -1,11 +1,17 @@
-<script setup lang="ts"></script>
-
 <template>
   <div>
-    <div class="h-dvh w-full">
-      <PhotoMap />
-    </div>
+    {{ images }}
   </div>
 </template>
 
-<style scoped></style>
+<script setup lang="ts">
+import { useImages } from '~/composables/useImages';
+
+const { getImages } = useImages();
+
+const images = ref([]);
+
+onMounted(async () => {
+  await getImages();
+});
+</script>
