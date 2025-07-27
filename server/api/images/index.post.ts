@@ -72,7 +72,7 @@ export default defineEventHandler(async (event: H3Event) => {
     }
 
     const photoService = new PhotoService(event);
-    const s3Service = new S3Service();
+    const s3Service = new S3Service(event);
 
     const uploadResults = await Promise.all(
       formData

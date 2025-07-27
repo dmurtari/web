@@ -1,4 +1,4 @@
-import { createD1Client } from '../database/client';
+import { createD1Client } from '~~/server/database/client';
 import type { H3Event } from 'h3';
 
 /**

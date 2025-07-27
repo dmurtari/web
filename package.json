@@ -13,8 +13,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.844.0",
-    "@nuxt/eslint": "^1.5.2",
+    "@nuxt/eslint": "^1.7.1",
     "@nuxt/fonts": "^0.11.4",
     "@nuxt/icon": "^1.15.0",
     "@nuxt/image": "^1.10.0",
@@ -29,7 +28,7 @@
   },
   "devDependencies": {
     "drizzle-kit": "^0.31.4",
-    "eslint": "^9.31.0",
+    "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.1",
     "nitro-cloudflare-dev": "^0.2.2",
