@@ -4,7 +4,7 @@
  */
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "kazusan-web",
+  "name": "kazusan-web-nuxthub",
   "main": "./.output/server/index.mjs",
   "compatibility_date": "2025-07-15",
   "assets": {
@@ -14,6 +14,13 @@
   "observability": {
     "enabled": true,
   },
+  "routes": [
+    {
+      "pattern": "kazusan.me",
+      "custom_domain": true,
+    },
+  ],
+  "preview_urls": false,
   "d1_databases": [
     {
       "binding": "DB",
