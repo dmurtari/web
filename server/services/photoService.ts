@@ -8,7 +8,7 @@ export class PhotoService {
   private client;
 
   constructor(event: H3Event) {
-    const d1Database = event.context.cloudflare.env.DB;
+    const d1Database = event.context.cloudflare.env.DB as D1Database;
     this.client = createD1Client(d1Database);
   }
 

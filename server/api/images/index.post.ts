@@ -6,6 +6,7 @@ import {
   UploadResponseSchema,
   FileValidationConfig,
 } from '~/types/image-upload';
+import { verifyCloudflareAccessToken } from '~~/server/utils/auth';
 import { PhotoService } from '~~/server/services/photoService';
 import { S3Service } from '~~/server/services/s3Service';
 
@@ -48,6 +49,8 @@ function validateFile(file: ServerFile): FileValidationResult {
 }
 
 export default defineEventHandler(async (event: H3Event) => {
+  await verifyCloudflareAccessToken(event);
+
   try {
     const contentType = event.node.req.headers['content-type'] || '';
     if (!contentType.includes('multipart/form-data')) {

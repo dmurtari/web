@@ -7,7 +7,7 @@ export class S3Service {
   private r2Bucket: R2Bucket;
 
   constructor(event: H3Event) {
-    this.r2Bucket = event.context.cloudflare.env.BUCKET;
+    this.r2Bucket = event.context.cloudflare.env.BUCKET as R2Bucket;
   }
 
   async uploadFile(fileBuffer: Buffer, filename: string, mimeType: string): Promise<string> {

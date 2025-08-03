@@ -36,4 +36,9 @@ export default defineNuxtConfig({
       ssr: true,
     },
   },
+
+  runtimeConfig: {
+    cloudflarePolicyAud: '',
+    cloudflareTeamUrl: '',
+  },
 });
