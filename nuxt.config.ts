@@ -32,5 +32,8 @@ export default defineNuxtConfig({
     '/map': {
       ssr: false,
     },
+    '/manage/**': {
+      ssr: true,
+    },
   },
 });

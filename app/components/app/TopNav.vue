@@ -3,7 +3,7 @@
     <div class="text-lg font-bold">Kazusan Web</div>
     <div class="flex space-x-4">
       <NuxtLink to="/" class="hover:underline">Home</NuxtLink>
-      <NuxtLink to="/manage/upload" class="hover:underline">Upload</NuxtLink>
+      <NuxtLink to="/manage/upload" external class="hover:underline">Upload</NuxtLink>
     </div>
   </nav>
 </template>
