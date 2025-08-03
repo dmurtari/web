@@ -4,7 +4,7 @@
  */
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "kazusan-web-nuxthub",
+  "name": "kazusan-web",
   "main": "./.output/server/index.mjs",
   "compatibility_date": "2025-07-15",
   "assets": {
