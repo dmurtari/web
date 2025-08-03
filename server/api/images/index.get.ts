@@ -1,4 +1,5 @@
 import type { H3Event } from 'h3';
+import type { ImageMeta } from '~~/app/types/image';
 import { PhotoService } from '~~/server/services/photoService';
 
 /**
@@ -7,7 +8,7 @@ import { PhotoService } from '~~/server/services/photoService';
 export default defineEventHandler(async (event: H3Event) => {
   try {
     const photoService = new PhotoService(event);
-    const photos = await photoService.getAllPhotos();
+    const photos: ImageMeta[] = await photoService.getAllPhotos();
 
     return {
       success: true,

@@ -15,6 +15,12 @@ export default defineNuxtConfig({
 
   modules: ['@nuxt/eslint', '@nuxt/icon', '@nuxt/fonts', '@nuxt/image', 'nitro-cloudflare-dev'],
 
+  image: {
+    cloudflare: {
+      baseURL: 'https://kazusan.me',
+    },
+  },
+
   typescript: {
     typeCheck: true,
   },

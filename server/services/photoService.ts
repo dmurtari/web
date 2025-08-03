@@ -1,5 +1,6 @@
 import { createD1Client } from '~~/server/database/client';
 import type { H3Event } from 'h3';
+import type { ImageMeta } from '~~/app/types/image';
 
 /**
  * Service for managing photo data in the D1 database
@@ -47,7 +48,7 @@ export class PhotoService {
   /**
    * Get all photos from the database
    */
-  async getAllPhotos() {
+  async getAllPhotos(): Promise<ImageMeta[]> {
     return await this.client.db.select().from(this.client.schema.photos);
   }
 }

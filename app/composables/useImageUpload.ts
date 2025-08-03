@@ -17,6 +17,7 @@ export function useImageUpload() {
         const errorMessages = error.issues.map((err) => err.message).join(', ');
         return { isValid: false, error: errorMessages };
       }
+
       return { isValid: false, error: 'Invalid file' };
     }
   }

@@ -28,4 +28,26 @@ export class S3Service {
       throw error;
     }
   }
+
+  async getFile(key: string) {
+    try {
+      const object = await this.r2Bucket.get(key);
+      if (!object) {
+        throw new Error('Object not found');
+      }
+
+      const arrayBuffer = await object.arrayBuffer();
+
+      return new Response(arrayBuffer, {
+        headers: {
+          'Content-Type': object.httpMetadata?.contentType || 'image/jpeg',
+          'Cache-Control': 'public, max-age=31536000', // Cache for a year
+          'Content-Length': object.size.toString(),
+        },
+      });
+    } catch (error) {
+      console.error('S3 retrieval error:', error);
+      throw error;
+    }
+  }
 }
