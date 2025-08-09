@@ -50,4 +50,13 @@ export class S3Service {
       throw error;
     }
   }
+
+  async deleteFile(key: string) {
+    try {
+      await this.r2Bucket.delete(key);
+    } catch (error) {
+      console.error('S3 delete error:', error);
+      throw error;
+    }
+  }
 }

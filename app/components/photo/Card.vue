@@ -22,6 +22,8 @@
         <div class="space-y-4 text-white">
           <h2 class="text-2xl font-semibold truncate">
             {{ image.originalFilename || image.filename }}
+
+            <AppButton v-if="isAuthenticated" @click="handleImageDelete"> Delete </AppButton>
           </h2>
 
           <div class="grid grid-cols-2 gap-4">
@@ -57,4 +59,10 @@
 import type { ImageMeta } from '~/types/image';
 
 const { image } = defineProps<{ image: ImageMeta }>();
+const { deleteImage } = useImages();
+const { isAuthenticated } = usePermissions();
+
+async function handleImageDelete(): Promise<void> {
+  await deleteImage(image.id);
+}
 </script>

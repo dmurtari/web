@@ -1,6 +1,7 @@
 import { createD1Client } from '~~/server/database/client';
 import type { H3Event } from 'h3';
 import type { ImageMeta } from '~~/app/types/image';
+import { eq } from 'drizzle-orm';
 
 /**
  * Service for managing photo data in the D1 database
@@ -50,5 +51,12 @@ export class PhotoService {
    */
   async getAllPhotos(): Promise<ImageMeta[]> {
     return await this.client.db.select().from(this.client.schema.photos);
+  }
+
+  async deletePhoto(id: string) {
+    return await this.client.db
+      .delete(this.client.schema.photos)
+      .where(eq(this.client.schema.photos.id, id))
+      .limit(1);
   }
 }
