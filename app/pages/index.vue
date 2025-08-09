@@ -1,6 +1,6 @@
 <template>
   <div>
-    <NuxtPicture v-for="img in images" :key="img.id" :src="img.url" />
+    <PhotoCard v-for="image in images" :key="image.id" :image />
   </div>
 </template>
 
