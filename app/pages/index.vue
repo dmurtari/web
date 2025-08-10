@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full w-full flex flex-col">
+  <div class="h-full w-full flex flex-col bg-gray-200">
     <!-- Photo Display -->
     <div class="flex-1 flex items-center justify-center p-4 overflow-hidden">
       <AppImage
@@ -11,13 +11,14 @@
     </div>
 
     <!-- Photo Scroller -->
-    <div class="h-40 border-t border-gray-200 bg-gray-50 p-4 flex-shrink-0">
+    <div class="h-40 border-t border-gray-500 bg-gray-50 p-4 flex-shrink-0">
       <div class="scrollable-photos overflow-x-scroll flex flex-nowrap h-full gap-1">
         <PhotoCard
           v-for="image in images"
           :key="image.id"
-          class="cursor-pointer h-32 w-24 flex-shrink-0 nap-center"
+          class="cursor-pointer h-full flex-shrink-0 nap-center"
           :image
+          :active="image.id === activeImage?.id"
           @delete="deleteImage(image.id)"
           @click="handleClickImage(image)"
         />
@@ -75,11 +76,11 @@ function useImageCarousel() {
   }
   10%,
   100% {
-    --left-fade: 2rem;
+    --left-fade: 1rem;
   }
   0%,
   90% {
-    --right-fade: 2rem;
+    --right-fade: 1rem;
   }
   100% {
     --right-fade: 0;
