@@ -1,7 +1,7 @@
 <template>
-  <div class="flex min-h-screen flex-col">
+  <div class="flex h-screen flex-col">
     <AppTopNav v-if="isAuthenticated" />
-    <main>
+    <main class="flex-1 overflow-hidden">
       <slot />
     </main>
   </div>

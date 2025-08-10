@@ -38,6 +38,7 @@
     "eslint-plugin-prettier": "^5.5.1",
     "nitro-cloudflare-dev": "^0.2.2",
     "prettier": "^3.6.2",
+    "sass": "^1.90.0",
     "typescript": "^5.9.2",
     "vue-tsc": "^3.0.3",
     "wrangler": "^4.27.0"
