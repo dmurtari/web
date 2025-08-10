@@ -1,18 +1,15 @@
 <template>
   <div>
-    <PhotoCard v-for="image in images" :key="image.id" :image />
+    <PhotoCard v-for="image in images" :key="image.id" :image @delete="deleteImage(image.id)" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useImages } from '~/composables/useImages';
-import type { ImageMeta } from '~/types/image';
 
-const { getImages } = useImages();
-
-const images = ref<ImageMeta[]>([]);
+const { images, deleteImage, getImages } = useImages();
 
 onMounted(async () => {
-  images.value = await getImages();
+  await getImages();
 });
 </script>

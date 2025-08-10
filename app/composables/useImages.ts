@@ -1,6 +1,8 @@
 import type { ImageMeta } from '~/types/image';
 
 export function useImages() {
+  const images = useState<ImageMeta[]>('images', () => []);
+
   async function getImages(): Promise<ImageMeta[]> {
     const response = await fetch('/api/images', {
       method: 'GET',
@@ -17,10 +19,12 @@ export function useImages() {
     }>();
 
     if (data.photos && Array.isArray(data.photos)) {
-      return data.photos;
+      images.value = data.photos;
+    } else {
+      images.value = [];
     }
 
-    return [];
+    return images.value;
   }
 
   async function deleteImage(id: string): Promise<void> {
@@ -31,9 +35,13 @@ export function useImages() {
     if (!response.ok) {
       throw new Error(`Failed to delete image: ${response.status}`);
     }
+
+    images.value = images.value.filter((image) => image.id !== id);
   }
 
   return {
+    images,
+
     getImages,
     deleteImage,
   };

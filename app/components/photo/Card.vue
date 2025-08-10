@@ -59,10 +59,13 @@
 import type { ImageMeta } from '~/types/image';
 
 const { image } = defineProps<{ image: ImageMeta }>();
-const { deleteImage } = useImages();
 const { isAuthenticated } = usePermissions();
 
+const emit = defineEmits<{
+  (e: 'delete'): void;
+}>();
+
 async function handleImageDelete(): Promise<void> {
-  await deleteImage(image.id);
+  emit('delete');
 }
 </script>
