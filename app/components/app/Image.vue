@@ -9,7 +9,7 @@
     v-else
     :src="image.url"
     :alt="image.originalFilename || image.filename"
-    v-bind="$attrs"
+    :imgAttrs="$attrs"
   />
 </template>
 
