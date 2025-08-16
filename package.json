@@ -32,6 +32,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250803.0",
+    "@iconify-json/heroicons": "^1.2.2",
     "drizzle-kit": "^0.31.4",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.5",
