@@ -2,11 +2,7 @@
   <div class="h-full w-full flex flex-col bg-gray-200">
     <!-- Photo Display -->
     <div class="flex-1 flex items-center justify-center p-4 overflow-hidden">
-      <AppImage
-        v-if="activeImage"
-        :image="activeImage"
-        class="max-w-full max-h-full object-contain"
-      />
+      <PhotoCardLarge v-if="activeImage" :image="activeImage" />
       <div v-else class="text-gray-500 text-lg">Click an image to view</div>
     </div>
 
