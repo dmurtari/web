@@ -13,9 +13,9 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@nuxt/eslint": "^1.7.1",
+    "@nuxt/eslint": "^1.8.0",
     "@nuxt/fonts": "^0.11.4",
-    "@nuxt/icon": "^1.15.0",
+    "@nuxt/icon": "^2.0.0",
     "@nuxt/image": "^1.11.0",
     "@tailwindcss/vite": "^4.1.11",
     "@vueuse/core": "^13.6.0",
