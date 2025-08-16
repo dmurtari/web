@@ -2,7 +2,11 @@
   <div class="h-full w-full flex flex-col bg-gray-200">
     <!-- Photo Display -->
     <div class="flex-1 flex items-center justify-center p-4 overflow-hidden">
-      <PhotoCardLarge v-if="activeImage" :image="activeImage" />
+      <PhotoCardLarge
+        v-if="activeImage"
+        :image="activeImage"
+        @delete="handleDeleteImage(activeImage.id)"
+      />
       <div v-else class="text-gray-500 text-lg">Click an image to view</div>
     </div>
 
@@ -15,7 +19,6 @@
           class="cursor-pointer h-full flex-shrink-0 nap-center"
           :image
           :active="image.id === activeImage?.id"
-          @delete="deleteImage(image.id)"
           @click="handleClickImage(image)"
         />
       </div>
@@ -27,8 +30,9 @@
 import { useImages } from '~/composables/useImages';
 import type { ImageMeta } from '~/types/image';
 
-const { images, deleteImage } = useImages();
+const { images } = useImages();
 const { activeImage, handleClickImage } = useImageCarousel();
+const { handleDeleteImage } = useImageDelete(activeImage);
 
 function useImageCarousel() {
   const { getImages } = useImages();
@@ -49,6 +53,24 @@ function useImageCarousel() {
   return {
     activeImage,
     handleClickImage,
+  };
+}
+
+function useImageDelete(activeImage: Ref<ImageMeta | null>) {
+  const { deleteImage } = useImages();
+
+  async function handleDeleteImage(imageId: string): Promise<void> {
+    await deleteImage(imageId);
+
+    if (images.value[0]) {
+      activeImage.value = images.value[0];
+    } else {
+      activeImage.value = null;
+    }
+  }
+
+  return {
+    handleDeleteImage,
   };
 }
 </script>

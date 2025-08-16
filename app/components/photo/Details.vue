@@ -3,6 +3,19 @@
     <div class="space-y-6">
       <h2 class="text-2xl font-bold text-gray-900 mb-4">Image Details</h2>
 
+      <div
+        v-if="isAuthenticated"
+        class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+      >
+        <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">Admin</h3>
+        </div>
+
+        <div class="px-4 py-3">
+          <AppButton @click="emit('delete')"> Delete </AppButton>
+        </div>
+      </div>
+
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
           <h3 class="text-lg font-medium text-gray-900">Basic Information</h3>
@@ -20,7 +33,6 @@
       </div>
     </div>
 
-    <!-- Right Column - Map Placeholder -->
     <div class="space-y-6">
       <h2 class="text-2xl font-bold text-gray-900 mb-4">Location</h2>
       <div
@@ -43,6 +55,12 @@ import type { ImageMeta } from '~/types/image';
 const { image } = defineProps<{
   image: ImageMeta;
 }>();
+
+const emit = defineEmits<{
+  delete: [];
+}>();
+
+const { isAuthenticated } = usePermissions();
 
 const formatDate = (timestamp: number): string => {
   return new Date(timestamp).toLocaleString();

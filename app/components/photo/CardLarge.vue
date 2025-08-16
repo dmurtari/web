@@ -1,7 +1,7 @@
 <template>
   <div class="relative w-full h-full">
     <div v-if="isViewingDetails">
-      <PhotoDetails :image />
+      <PhotoDetails :image @delete="emit('delete')" />
     </div>
     <template v-else>
       <AppImage class="object-contain w-full h-full" :image />
@@ -27,6 +27,10 @@ import type { ImageMeta } from '~/types/image';
 
 const { image } = defineProps<{
   image: ImageMeta;
+}>();
+
+const emit = defineEmits<{
+  delete: [];
 }>();
 
 const { isViewingDetails } = useViewDetail();
