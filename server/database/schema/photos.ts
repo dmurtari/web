@@ -7,7 +7,16 @@ export const photos = sqliteTable('photos', {
   uploadedAt: integer('uploaded_at').notNull().default(Date.now()),
   mimeType: text('mime_type').notNull(),
   size: integer('size').notNull(),
+  description: text('description'),
+
+  // EXIF fields
   latitude: text('latitude'),
   longitude: text('longitude'),
-  description: text('description'),
+  cameraMake: text('camera_make'),
+  cameraModel: text('camera_model'),
+  exposureTime: text('exposure_time'),
+  aperture: text('aperture'),
+  iso: text('iso'),
+  focalLength: text('focal_length'),
+  takenAt: integer('taken_at'),
 });

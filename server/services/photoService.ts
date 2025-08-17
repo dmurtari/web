@@ -20,18 +20,32 @@ export class PhotoService {
     originalFilename,
     mimeType,
     size,
+    description,
     latitude,
     longitude,
-    description,
+    cameraMake,
+    cameraModel,
+    exposureTime,
+    aperture,
+    iso,
+    focalLength,
+    takenAt,
   }: {
     id: string;
     filename: string;
     originalFilename: string;
     mimeType: string;
     size: number;
+    description?: string;
     latitude?: string;
     longitude?: string;
-    description?: string;
+    cameraMake?: string;
+    cameraModel?: string;
+    exposureTime?: string;
+    aperture?: string;
+    iso?: string;
+    focalLength?: string;
+    takenAt?: number;
   }) {
     return await this.client.db.insert(this.client.schema.photos).values({
       id,
@@ -39,16 +53,20 @@ export class PhotoService {
       originalFilename,
       mimeType,
       size,
+      description,
       latitude,
       longitude,
-      description,
+      cameraMake,
+      cameraModel,
+      exposureTime,
+      aperture,
+      iso,
+      focalLength,
+      takenAt,
       uploadedAt: Date.now(),
     });
   }
 
-  /**
-   * Get all photos from the database
-   */
   async getAllPhotos(): Promise<ImageMeta[]> {
     return await this.client.db.select().from(this.client.schema.photos);
   }

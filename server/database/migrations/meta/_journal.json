@@ -8,6 +8,20 @@
       "when": 1752754302367,
       "tag": "0000_blue_franklin_richards",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1755394584123,
+      "tag": "0001_mute_lorna_dane",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1755403659745,
+      "tag": "0002_natural_wrecker",
+      "breakpoints": true
     }
   ]
 }

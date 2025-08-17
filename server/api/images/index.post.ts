@@ -9,6 +9,7 @@ import {
 import { verifyCloudflareAccessToken } from '~~/server/utils/auth';
 import { PhotoService } from '~~/server/services/photoService';
 import { S3Service } from '~~/server/services/s3Service';
+import { ImageProcessingService } from '~~/server/services/imageProcessingService';
 
 function validateFile(file: ServerFile): FileValidationResult {
   if (!file.filename) {
@@ -77,6 +78,8 @@ export default defineEventHandler(async (event: H3Event) => {
     const photoService = new PhotoService(event);
     const s3Service = new S3Service(event);
 
+    const imageProcessingService = new ImageProcessingService();
+
     const uploadResults = await Promise.all(
       formData
         .filter((file) => file.name === 'image')
@@ -92,8 +95,11 @@ export default defineEventHandler(async (event: H3Event) => {
             const result = validateFile(parsedFile as ServerFile);
 
             if (result.success) {
+              const resizedImageBuffer = await imageProcessingService.resizeImage(file.data);
+              const exifData = await imageProcessingService.extractExif(file.data);
+
               const fileId = await s3Service.uploadFile(
-                file.data,
+                resizedImageBuffer,
                 file.filename || '',
                 file.type || '',
               );
@@ -104,8 +110,8 @@ export default defineEventHandler(async (event: H3Event) => {
                 filename: fileId,
                 originalFilename: file.filename || 'unknown',
                 mimeType: file.type || 'application/octet-stream',
-                size: file.data.length,
-                // TODO: EXIF Data
+                size: resizedImageBuffer.length,
+                ...exifData,
               });
             }
 

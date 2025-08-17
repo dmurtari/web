@@ -8,7 +8,6 @@
           ref="fileInputRef"
           name="image-upload"
           type="file"
-          :accept="imageUpload.allowedFileTypes"
           class="mb-4"
           hidden
           multiple
