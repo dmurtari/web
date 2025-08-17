@@ -1,12 +1,29 @@
 <template>
   <div class="h-full w-full flex flex-col bg-gray-200">
     <!-- Photo Display -->
-    <div class="flex-1 flex items-center justify-center p-4 overflow-hidden">
-      <PhotoCardLarge
-        v-if="activeImage"
-        :image="activeImage"
-        @delete="handleDeleteImage(activeImage.id)"
-      />
+    <div class="relative flex-1 flex items-center justify-center p-4 overflow-hidden">
+      <template v-if="activeImage">
+        <PhotoDetails
+          v-if="isViewingDetails"
+          class="w-full h-full"
+          :image="activeImage"
+          @delete="handleDeleteImage(activeImage.id)"
+        />
+        <PhotoCardLarge v-else :image="activeImage" />
+
+        <div class="absolute top-2 right-2 z-10">
+          <button
+            class="w-8 h-8 bg-black bg-opacity-50 hover:bg-opacity-70 text-white rounded-full flex items-center justify-center font-bold text-sm transition-colors cursor-pointer"
+            :title="isViewingDetails ? 'Hide Details' : 'Show Details'"
+            @click="handleViewDetails"
+          >
+            <Icon
+              :name="`heroicons:${isViewingDetails ? 'x-circle' : 'information-circle'}`"
+              class="w-4 h-4"
+            />
+          </button>
+        </div>
+      </template>
       <div v-else class="text-gray-500 text-lg">Click an image to view</div>
     </div>
 
@@ -32,6 +49,7 @@ import type { ImageMeta } from '~/types/image';
 
 const { images } = useImages();
 const { activeImage, handleClickImage } = useImageCarousel();
+const { isViewingDetails, handleViewDetails } = useImageView();
 const { handleDeleteImage } = useImageDelete(activeImage);
 
 function useImageCarousel() {
@@ -56,16 +74,31 @@ function useImageCarousel() {
   };
 }
 
-function useImageDelete(activeImage: Ref<ImageMeta | null>) {
-  const { deleteImage } = useImages();
+function useImageView() {
+  const isViewingDetails = ref<boolean>(false);
+
+  function handleViewDetails() {
+    isViewingDetails.value = !isViewingDetails.value;
+  }
+
+  return {
+    isViewingDetails,
+    handleViewDetails,
+  };
+}
+
+function useImageDelete(activeImageRef: Ref<ImageMeta | null>) {
+  const { images, deleteImage } = useImages();
 
   async function handleDeleteImage(imageId: string): Promise<void> {
+    const deleteIndex = images.value.findIndex((image) => image.id === imageId);
+
     await deleteImage(imageId);
 
-    if (images.value[0]) {
-      activeImage.value = images.value[0];
+    if (images.value[deleteIndex]) {
+      activeImageRef.value = images.value[deleteIndex];
     } else {
-      activeImage.value = null;
+      activeImageRef.value = null;
     }
   }
 

@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 /**
  * Service for managing photo data in the D1 database
  */
-export class PhotoService {
+export class DbService {
   private client;
 
   constructor(event: H3Event) {

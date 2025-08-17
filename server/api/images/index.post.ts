@@ -7,7 +7,7 @@ import {
   FileValidationConfig,
 } from '~/types/image-upload';
 import { verifyCloudflareAccessToken } from '~~/server/utils/auth';
-import { PhotoService } from '~~/server/services/dbService';
+import { DbService } from '~~/server/services/dbService';
 import { S3Service } from '~~/server/services/s3Service';
 import { ImageProcessingService } from '~~/server/services/imageProcessingService';
 
@@ -75,7 +75,7 @@ export default defineEventHandler(async (event: H3Event) => {
       );
     }
 
-    const photoService = new PhotoService(event);
+    const photoService = new DbService(event);
     const s3Service = new S3Service(event);
 
     const imageProcessingService = new ImageProcessingService();

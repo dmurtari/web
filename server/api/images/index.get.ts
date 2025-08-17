@@ -1,13 +1,13 @@
 import type { H3Event } from 'h3';
 import type { ImageMeta } from '~~/app/types/image';
-import { PhotoService } from '~~/server/services/dbService';
+import { DbService } from '~~/server/services/dbService';
 
 /**
  * Endpoint to get all photos with their metadata
  */
 export default defineEventHandler(async (event: H3Event) => {
   try {
-    const photoService = new PhotoService(event);
+    const photoService = new DbService(event);
     const photos: ImageMeta[] = await photoService.getAllPhotos();
 
     return {
