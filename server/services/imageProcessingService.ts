@@ -1,4 +1,4 @@
-import sharp from 'sharp';
+import { Jimp } from 'jimp';
 import ExifReader from 'exifreader';
 
 interface ExifResult {
@@ -16,20 +16,19 @@ interface ExifResult {
 export class ImageProcessingService {
   async resizeImage(imageBuffer: Buffer, maxDimension: number = 3840): Promise<Buffer> {
     try {
-      const metadata = await sharp(imageBuffer).metadata();
+      const image = await Jimp.fromBuffer(imageBuffer);
 
       if (
-        !metadata.width ||
-        !metadata.height ||
-        (metadata.width <= maxDimension && metadata.height <= maxDimension)
+        !image.width ||
+        !image.height ||
+        (image.width <= maxDimension && image.height <= maxDimension)
       ) {
         return imageBuffer;
       }
 
-      const resizeOptions: sharp.ResizeOptions =
-        metadata.width > metadata.height ? { width: maxDimension } : { height: maxDimension };
+      const resizeOptions = image.width > image.height ? { w: maxDimension } : { h: maxDimension };
 
-      return await sharp(imageBuffer).resize(resizeOptions).toBuffer();
+      return await image.resize(resizeOptions).getBuffer('image/jpeg');
     } catch {
       throw new Error('Failed to resize image');
     }
