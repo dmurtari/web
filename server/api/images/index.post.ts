@@ -7,7 +7,7 @@ import {
   FileValidationConfig,
 } from '~/types/image-upload';
 import { verifyCloudflareAccessToken } from '~~/server/utils/auth';
-import { PhotoService } from '~~/server/services/photoService';
+import { PhotoService } from '~~/server/services/dbService';
 import { S3Service } from '~~/server/services/s3Service';
 import { ImageProcessingService } from '~~/server/services/imageProcessingService';
 

@@ -1,5 +1,5 @@
 import type { H3Event } from 'h3';
-import { PhotoService } from '~~/server/services/photoService';
+import { PhotoService } from '~~/server/services/dbService';
 import { S3Service } from '~~/server/services/s3Service';
 
 export default defineEventHandler(async (event: H3Event) => {

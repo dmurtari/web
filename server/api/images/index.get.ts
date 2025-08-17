@@ -1,6 +1,6 @@
 import type { H3Event } from 'h3';
 import type { ImageMeta } from '~~/app/types/image';
-import { PhotoService } from '~~/server/services/photoService';
+import { PhotoService } from '~~/server/services/dbService';
 
 /**
  * Endpoint to get all photos with their metadata
