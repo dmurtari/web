@@ -1,6 +1,8 @@
 import type { H3Event } from 'h3';
 import { createError, sendError } from 'h3';
 
+import logger from '~~/server/utils/logger';
+
 export interface ApiSuccessResponse<T = unknown> {
   success: true;
   data?: T;
@@ -46,7 +48,7 @@ export function handleApiError(
   defaultMessage: string = 'Internal server error',
   defaultStatusCode: number = 500,
 ) {
-  console.error('API Error:', error);
+  logger.error('API Error:', error);
 
   const errorMessage = error instanceof Error ? error.message : defaultMessage;
 

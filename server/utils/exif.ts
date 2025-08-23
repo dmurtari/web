@@ -1,7 +1,10 @@
+import { z } from 'zod';
 import type { ExifData } from '~/types/image';
 import { ExifDataSchema } from '~/types/image';
+
 import { extractExif } from '~~/shared/exif';
-import { z } from 'zod';
+
+import logger from '~~/server/utils/logger';
 
 export interface ExifProcessingResult {
   success: boolean;
@@ -18,7 +21,6 @@ export async function processExifData(
   parseInFrontend: boolean = false,
 ): Promise<ExifProcessingResult> {
   try {
-    // If frontend parsing is enabled and data is provided, use it
     if (parseInFrontend && frontendExifData && Object.keys(frontendExifData).length > 0) {
       const validatedData = ExifDataSchema.parse(frontendExifData);
       return {
@@ -27,14 +29,13 @@ export async function processExifData(
       };
     }
 
-    // Otherwise, extract EXIF data from the image buffer on the backend
     const extractedData = await extractExif(imageBuffer);
     return {
       success: true,
       data: extractedData,
     };
   } catch (error) {
-    console.error('EXIF processing error:', error);
+    logger.error('EXIF processing error:', error);
 
     let errorMessage = 'Failed to process EXIF data';
     if (error instanceof z.ZodError) {
@@ -69,7 +70,7 @@ export function parseExifFromFormData(
     const parsedExifData = JSON.parse(exifDataString);
     return ExifDataSchema.parse(parsedExifData);
   } catch (error) {
-    console.warn('Failed to parse EXIF data from form field:', error);
+    logger.warn('Failed to parse EXIF data from form field:', error);
     return null;
   }
 }

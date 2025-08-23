@@ -1,5 +1,7 @@
 import type { H3Event } from 'h3';
 
+import logger from '~~/server/utils/logger';
+
 export function getBucket(event: H3Event): R2Bucket {
   return event.context.cloudflare.env.BUCKET as R2Bucket;
 }
@@ -32,7 +34,7 @@ export async function uploadFile(
     const imageId = key.split('/').pop() || '';
     return imageId;
   } catch (error) {
-    console.error('Storage upload error:', error);
+    logger.error('Storage upload error:', error);
     throw error;
   }
 }
@@ -55,17 +57,21 @@ export async function getFile(event: H3Event, key: string) {
       },
     });
   } catch (error) {
-    console.error('Storage retrieval error:', error);
+    logger.error('Storage retrieval error:', error);
     throw error;
   }
 }
 
-export async function deleteFile(event: H3Event, key: string) {
+export async function deleteFile(event: H3Event, key: string): Promise<void> {
   try {
+    logger.debug('Deleting file from R2 storage', { key });
+
     const bucket = getBucket(event);
     await bucket.delete(key);
+
+    logger.info('File deleted from R2 storage successfully', { key });
   } catch (error) {
-    console.error('Storage delete error:', error);
+    logger.error('Storage delete error:', error);
     throw error;
   }
 }

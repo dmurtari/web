@@ -4,18 +4,19 @@ import type { ImageMeta } from '~/types/image';
 
 import { getAllPhotos } from '~~/server/utils/database';
 import { handleApiError, createSuccessResponse } from '~~/server/utils/responses';
+import logger from '~~/server/utils/logger';
 
-/**
- * Endpoint to get all photos with their metadata
- */
 export default defineEventHandler(async (event: H3Event) => {
   try {
+    logger.info('Processing request to list all photos');
     const photos: ImageMeta[] = await getAllPhotos(event);
 
     const photosWithUrls = photos.map((photo) => ({
       ...photo,
       url: `/api/images/${photo.id}`,
     }));
+
+    logger.info(`Successfully fetched ${photos.length} photos`);
 
     return createSuccessResponse({
       count: photos.length,

@@ -2,10 +2,12 @@ import type { H3Event } from 'h3';
 import type { ServerFile, UploadResponse, ExifData } from '~/types/image';
 
 import { resizeImage } from '~~/shared/image';
+
 import { savePhoto } from '~~/server/utils/database';
 import { uploadFile } from '~~/server/utils/storage';
 import { validateFile } from '~~/server/utils/validation';
 import { processExifData, parseExifFromFormData } from '~~/server/utils/exif';
+import logger from '~~/server/utils/logger';
 
 export interface UploadFileData {
   name?: string;
@@ -28,7 +30,11 @@ export async function processImageUpload(
   options: ProcessUploadOptions,
 ): Promise<UploadResponse> {
   try {
-    // Validate the uploaded file
+    logger.debug('Starting image upload processing', {
+      filename: imageFile.filename,
+      type: imageFile.type,
+      size: imageFile.data?.length,
+    });
     const parsedFile: ServerFile = {
       name: imageFile.name,
       filename: imageFile.filename,
@@ -36,19 +42,33 @@ export async function processImageUpload(
       data: imageFile.data,
     };
 
+    logger.debug('Validating uploaded file', { filename: imageFile.filename });
     const validationResult = validateFile(parsedFile);
     if (!validationResult.success) {
+      logger.warn('File validation failed', {
+        filename: imageFile.filename,
+        error: validationResult.error,
+      });
       return {
         success: false,
         file: validationResult,
         message: 'Image upload failed.',
       };
     }
-
-    // Resize the image
+    logger.debug('File validation successful', { filename: imageFile.filename });
+    logger.debug('Resizing image', {
+      filename: imageFile.filename,
+      originalSize: imageFile.data?.length,
+    });
     const resizedImageBuffer = await resizeImage(imageFile.data);
-
-    // Process EXIF data
+    logger.debug('Image resized successfully', {
+      filename: imageFile.filename,
+      newSize: resizedImageBuffer.length,
+    });
+    logger.debug('Processing EXIF data', {
+      filename: imageFile.filename,
+      parseInFrontend: options.parseExifInFrontend,
+    });
     const exifResult = await processExifData(
       imageFile.data,
       frontendExifData,
@@ -56,6 +76,10 @@ export async function processImageUpload(
     );
 
     if (!exifResult.success) {
+      logger.warn('EXIF processing failed', {
+        filename: imageFile.filename,
+        error: exifResult.error,
+      });
       return {
         success: false,
         file: {
@@ -66,16 +90,19 @@ export async function processImageUpload(
         message: 'Image upload failed.',
       };
     }
-
-    // Upload to storage
+    logger.debug('EXIF processing successful', { filename: imageFile.filename });
+    logger.debug('Uploading file to storage', { filename: imageFile.filename });
     const fileId = await uploadFile(
       event,
       resizedImageBuffer,
       imageFile.filename || '',
       imageFile.type || '',
     );
-
-    // Save to database
+    logger.info('File uploaded to storage successfully', {
+      filename: imageFile.filename,
+      fileId,
+    });
+    logger.debug('Saving photo metadata to database', { fileId });
     await savePhoto(event, {
       id: fileId,
       filename: fileId,
@@ -84,6 +111,7 @@ export async function processImageUpload(
       size: resizedImageBuffer.length,
       ...exifResult.data,
     });
+    logger.info('Photo metadata saved to database', { fileId });
 
     return {
       success: true,
@@ -97,7 +125,7 @@ export async function processImageUpload(
       message: 'Image uploaded successfully.',
     };
   } catch (error) {
-    console.error('Error processing image upload:', error);
+    logger.error('Error processing image upload:', error);
 
     const errorMessage = error instanceof Error ? error.message : 'Failed to upload';
 
@@ -123,7 +151,6 @@ export function extractUploadData(
   exifData: ExifData;
   error?: string;
 } {
-  // Find the image file
   const imageFile = formData.find((file) => file.name === 'image');
   if (!imageFile) {
     return {
@@ -132,7 +159,6 @@ export function extractUploadData(
     };
   }
 
-  // Parse EXIF data if provided
   const exifDataField = formData.find((field) => field.name === 'exifData');
   const exifData = parseExifFromFormData(exifDataField);
 

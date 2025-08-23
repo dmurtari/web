@@ -3,22 +3,23 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from "vue";
-import type { Map as MapType } from "maplibre-gl";
+import { onMounted, onUnmounted } from 'vue';
+import type { Map as MapType } from 'maplibre-gl';
+import logger from '~/utils/logger';
 
 let map: MapType | null = null;
-const mapContainer = useTemplateRef<HTMLElement>("mapContainer");
+const mapContainer = useTemplateRef<HTMLElement>('mapContainer');
 
 onMounted(async () => {
   if (mapContainer.value == null) {
-    console.error("Map container does not exist");
+    logger.error('Map container does not exist');
   }
 
-  const { Map } = await import("maplibre-gl");
+  const { Map } = await import('maplibre-gl');
 
   map = new Map({
     container: mapContainer.value!,
-    style: "https://demotiles.maplibre.org/style.json",
+    style: 'https://demotiles.maplibre.org/style.json',
     center: [0, 0],
     zoom: 2,
   });
@@ -40,5 +41,5 @@ onUnmounted(() => {
 </style>
 
 <style>
-@import "maplibre-gl/dist/maplibre-gl.css";
+@import 'maplibre-gl/dist/maplibre-gl.css';
 </style>

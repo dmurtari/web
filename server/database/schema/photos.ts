@@ -8,8 +8,6 @@ export const photos = sqliteTable('photos', {
   mimeType: text('mime_type').notNull(),
   size: integer('size').notNull(),
   description: text('description'),
-
-  // EXIF fields
   latitude: text('latitude'),
   longitude: text('longitude'),
   cameraMake: text('camera_make'),

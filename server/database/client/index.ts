@@ -16,9 +16,6 @@ export function createD1Client(d1Database: AnyD1Database) {
     db,
     schema,
 
-    // Helper methods can be added here for common operations
     getPhotoById: (id: string) => db.select().from(schema.photos).where(eq(schema.photos.id, id)),
-
-    // Add more helper methods as needed
   };
 }

@@ -1,19 +1,18 @@
 import * as jose from 'jose';
 import type { H3Event } from 'h3';
-import { useRuntimeConfig, createError } from '#imports';
+
+import logger from '~~/server/utils/logger';
 
 /**
- * Verifies a Cloudflare Access JWT token and returns the user payload
- *
  * https://developers.cloudflare.com/cloudflare-one/identity/authorization-cookie/validating-json/#javascript-example
- *
- * @param event
- * @throws
  */
 export async function verifyCloudflareAccessToken(event: H3Event) {
   if (import.meta.dev) {
+    logger.debug('Skipping auth verification in development mode');
     return;
   }
+
+  logger.debug('Verifying Cloudflare Access token');
 
   const config = useRuntimeConfig();
 
@@ -21,6 +20,10 @@ export async function verifyCloudflareAccessToken(event: H3Event) {
   const TEAM_DOMAIN = config.cloudflareTeamUrl;
 
   if (!AUD || !TEAM_DOMAIN) {
+    logger.error('Missing Cloudflare configuration', {
+      hasAud: !!AUD,
+      hasTeamDomain: !!TEAM_DOMAIN,
+    });
     throw createError({
       statusCode: 403,
     });
@@ -32,6 +35,7 @@ export async function verifyCloudflareAccessToken(event: H3Event) {
   const token = getCookie(event, 'CF_Authorization');
 
   if (!token) {
+    logger.warn('No CF_Authorization cookie found');
     throw createError({
       statusCode: 403,
     });
@@ -43,8 +47,15 @@ export async function verifyCloudflareAccessToken(event: H3Event) {
       audience: AUD,
     });
 
+    logger.info('Authentication successful', {
+      userId: result.payload.sub,
+      email: result.payload.email,
+    });
     return result.payload;
-  } catch {
+  } catch (error) {
+    logger.warn('Token verification failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     throw createError({
       statusCode: 401,
     });

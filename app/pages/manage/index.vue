@@ -59,6 +59,7 @@
 
 <script setup lang="ts">
 import type { FileUploadStatus } from '~/types/image';
+import logger from '~/utils/logger';
 
 const imageUpload = useImageUpload();
 const fileInputRef = useTemplateRef('fileInputRef');
@@ -83,7 +84,6 @@ function handleFileChange(event: Event) {
   const newFiles = Array.from(input.files);
   selectedFiles.value = [...selectedFiles.value, ...newFiles];
 
-  // Initialize upload statuses for new files
   const newStatuses: FileUploadStatus[] = newFiles.map((file) => ({
     file,
     status: 'pending',
@@ -115,7 +115,6 @@ async function handleSubmit() {
     return;
   }
 
-  // Validate all files first
   const validationErrors: string[] = [];
   selectedFiles.value.forEach((file, _index) => {
     const validation = imageUpload.validateFile(file);
@@ -143,10 +142,7 @@ async function handleSubmit() {
       fileUploadStatuses.value = statuses;
     });
 
-    // Update final statuses
     fileUploadStatuses.value = finalStatuses;
-
-    // Analyze results
     const successCount = finalStatuses.filter((status) => status.status === 'success').length;
     const errorCount = finalStatuses.filter((status) => status.status === 'error').length;
 
@@ -156,7 +152,6 @@ async function handleSubmit() {
         text: `All ${successCount} images uploaded successfully!`,
       };
 
-      // Clean up successful uploads
       selectedFiles.value.forEach((file) => {
         const previewUrl = imageUpload.getFilePreviewUrl(file);
         imageUpload.revokeFilePreviewUrl(previewUrl);
@@ -178,7 +173,6 @@ async function handleSubmit() {
         text: `${successCount} images uploaded successfully, but ${errorCount} failed. Check errors below.`,
       };
 
-      // Remove successful uploads from the list
       const failedIndices = finalStatuses
         .map((status, index) => (status.status === 'error' ? index : -1))
         .filter((index) => index !== -1);
@@ -190,7 +184,6 @@ async function handleSubmit() {
         .map((index) => finalStatuses[index])
         .filter((status): status is FileUploadStatus => Boolean(status));
 
-      // Clean up successful uploads
       finalStatuses.forEach((status, _index) => {
         if (status.status === 'success' && !failedIndices.includes(_index)) {
           const previewUrl = imageUpload.getFilePreviewUrl(status.file);
@@ -199,7 +192,7 @@ async function handleSubmit() {
       });
     }
   } catch (error) {
-    console.error('Upload failed:', error);
+    logger.error('Upload failed:', error);
     uploadMessage.value = {
       type: 'error',
       text: error instanceof Error ? error.message : 'Failed to upload images. Please try again.',
