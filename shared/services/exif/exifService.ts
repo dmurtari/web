@@ -56,13 +56,37 @@ function extractExifDataFromTags(tags: ExifTags): ExifData {
     cameraModel: tags.exif?.Model?.description,
     exposureTime: tags.exif?.ExposureTime?.description,
     aperture: tags.exif?.ApertureValue?.description,
-    focalLength: tags.exif?.FocalLength?.description,
+    focalLength: (() => {
+      const focalLengthDesc = tags.exif?.FocalLength?.description;
+      if (!focalLengthDesc) return undefined;
+
+      // Extract just the numeric value, removing units like "mm"
+      const numericValue = focalLengthDesc.replace(/[^\d.]/g, '');
+      if (!numericValue) return undefined;
+
+      // Parse as float and round to 1 decimal place
+      const parsed = parseFloat(numericValue);
+      if (isNaN(parsed)) return undefined;
+
+      return parsed.toFixed(1);
+    })(),
     iso:
       tags.exif?.ISOSpeedRatings?.description ||
       (tags.exif?.ISOSpeedRatings?.value ? String(tags.exif.ISOSpeedRatings.value) : undefined),
-    takenAt: tags.exif?.DateTimeOriginal?.description
-      ? new Date(tags.exif.DateTimeOriginal.description).valueOf()
-      : undefined,
+    takenAt: (() => {
+      if (!tags.exif?.DateTimeOriginal?.description) return undefined;
+
+      const dateStr = tags.exif.DateTimeOriginal.description;
+
+      // EXIF dates are often in format "YYYY:MM:DD HH:mm:ss"
+      // Convert to ISO format for better parsing
+      const isoDateStr = dateStr.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
+
+      const date = new Date(isoDateStr);
+      const timestamp = date.valueOf();
+
+      return Number.isNaN(timestamp) ? undefined : timestamp;
+    })(),
     latitude: tags.gps?.Latitude ? String(tags.gps.Latitude) : undefined,
     longitude: tags.gps?.Longitude ? String(tags.gps.Longitude) : undefined,
   };

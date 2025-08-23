@@ -159,14 +159,20 @@ export default defineEventHandler(async (event: H3Event) => {
         );
         result.url = fileId;
 
-        await photoService.savePhoto({
-          id: fileId,
-          filename: fileId,
-          originalFilename: imageFile.filename || 'unknown',
-          mimeType: imageFile.type || 'application/octet-stream',
-          size: resizedImageBuffer.length,
-          ...exifData,
-        });
+        try {
+          await photoService.savePhoto({
+            id: fileId,
+            filename: fileId,
+            originalFilename: imageFile.filename || 'unknown',
+            mimeType: imageFile.type || 'application/octet-stream',
+            size: resizedImageBuffer.length,
+            ...exifData,
+          });
+        } catch (dbError) {
+          console.error('Failed to save photo to database:', dbError);
+          // TODO: Optionally delete the uploaded file from S3 here
+          throw new Error('Failed to save photo to database');
+        }
       }
 
       const validatedResult = FileValidationResultSchema.parse(result);
