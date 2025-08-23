@@ -21,9 +21,7 @@ export default defineEventHandler(async (event: H3Event) => {
     const photoService = new DbService(event);
     const key = `uploads/${id}`;
 
-    console.log('Deleting image with ID:', id);
     await photoService.deletePhoto(id);
-    console.log('Deleting from S3 with key:', key);
     await s3Service.deleteFile(key);
   } catch (error) {
     console.error('Error deleting image:', error);

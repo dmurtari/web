@@ -15,31 +15,40 @@
         />
         <div class="flex space-x-4">
           <AppButton type="button" @click="openFileSelector"> Select Images </AppButton>
-          <AppButton type="submit" :disabled="uploadStatus.isUploading || selectedFiles.length < 1">
-            {{ uploadStatus.isUploading ? 'Uploading...' : 'Upload' }}
+          <AppButton type="submit" :disabled="isUploading || selectedFiles.length < 1">
+            {{ isUploading ? 'Uploading...' : 'Upload' }}
           </AppButton>
         </div>
       </form>
 
       <div
-        v-if="uploadStatus.isSuccess !== null"
+        v-if="uploadMessage"
         class="mt-4 p-3 rounded"
         :class="{
-          'bg-green-100 text-green-800': uploadStatus.isSuccess,
-          'bg-red-100 text-red-800': !uploadStatus.isSuccess,
+          'bg-green-100 text-green-800': uploadMessage.type === 'success',
+          'bg-red-100 text-red-800': uploadMessage.type === 'error',
+          'bg-blue-100 text-blue-800': uploadMessage.type === 'info',
         }"
       >
-        {{ uploadStatus.message }}
+        {{ uploadMessage.text }}
       </div>
 
       <div v-if="selectedFiles.length > 0" class="mt-6">
         <h2 class="text-lg font-semibold mb-2">Selected Images ({{ selectedFiles.length }})</h2>
         <div class="space-y-2">
           <UploadPhotoCard
-            v-for="(file, index) in selectedFiles"
+            v-for="(fileStatus, index) in fileUploadStatuses"
             :key="index"
-            :file="file"
-            :error="uploadStatus.validationErrors[index]"
+            :file="fileStatus.file"
+            :status="fileStatus.status"
+            :error="
+              fileStatus.error ||
+              (fileStatus.result && !fileStatus.result.success
+                ? fileStatus.result.file.success === false
+                  ? fileStatus.result.file.error
+                  : 'Upload failed'
+                : undefined)
+            "
             @removeFile="removeFile(index)"
           />
         </div>
@@ -49,8 +58,9 @@
 </template>
 
 <script setup lang="ts">
-const imageUpload = useImageUpload();
+import type { FileUploadStatus } from '~/composables/useImageUpload';
 
+const imageUpload = useImageUpload();
 const fileInputRef = useTemplateRef('fileInputRef');
 
 function openFileSelector() {
@@ -58,17 +68,13 @@ function openFileSelector() {
 }
 
 const selectedFiles = ref<File[]>([]);
-const uploadStatus = ref<{
-  isUploading: boolean;
-  isSuccess: boolean | null;
-  message: string;
-  validationErrors: Record<number, string>;
-}>({
-  isUploading: false,
-  isSuccess: null,
-  message: '',
-  validationErrors: {},
-});
+const fileUploadStatuses = ref<FileUploadStatus[]>([]);
+const isUploading = ref(false);
+
+const uploadMessage = ref<{
+  type: 'success' | 'error' | 'info';
+  text: string;
+} | null>(null);
 
 function handleFileChange(event: Event) {
   const input = event.target as HTMLInputElement;
@@ -77,7 +83,14 @@ function handleFileChange(event: Event) {
   const newFiles = Array.from(input.files);
   selectedFiles.value = [...selectedFiles.value, ...newFiles];
 
-  uploadStatus.value.validationErrors = {};
+  // Initialize upload statuses for new files
+  const newStatuses: FileUploadStatus[] = newFiles.map((file) => ({
+    file,
+    status: 'pending',
+  }));
+
+  fileUploadStatuses.value = [...fileUploadStatuses.value, ...newStatuses];
+  uploadMessage.value = null;
 }
 
 function removeFile(index: number) {
@@ -88,95 +101,109 @@ function removeFile(index: number) {
   }
 
   selectedFiles.value = selectedFiles.value.filter((_, i) => i !== index);
-
-  if (uploadStatus.value.validationErrors[index]) {
-    const newErrors = { ...uploadStatus.value.validationErrors };
-    uploadStatus.value.validationErrors = Object.fromEntries(
-      Object.entries(newErrors).filter(([key]) => Number(key) !== index),
-    );
-  }
+  fileUploadStatuses.value = fileUploadStatuses.value.filter((_, i) => i !== index);
 }
 
 async function handleSubmit() {
   if (selectedFiles.value.length === 0) {
-    uploadStatus.value = {
-      isUploading: false,
-      isSuccess: false,
-      message: 'Please select at least one image to upload.',
-      validationErrors: {},
+    uploadMessage.value = {
+      type: 'error',
+      text: 'Please select at least one image to upload.',
     };
     return;
   }
 
-  const validationErrors: Record<number, string> = {};
-  let hasErrors = false;
-
-  selectedFiles.value.forEach((file, index) => {
+  // Validate all files first
+  const validationErrors: string[] = [];
+  selectedFiles.value.forEach((file, _index) => {
     const validation = imageUpload.validateFile(file);
     if (!validation.isValid && validation.error) {
-      validationErrors[index] = validation.error;
-      hasErrors = true;
+      validationErrors.push(`${file.name}: ${validation.error}`);
     }
   });
 
-  if (hasErrors) {
-    uploadStatus.value = {
-      isUploading: false,
-      isSuccess: false,
-      message: 'Some files failed validation. Please check the errors below.',
-      validationErrors,
+  if (validationErrors.length > 0) {
+    uploadMessage.value = {
+      type: 'error',
+      text: `Validation failed: ${validationErrors.join(', ')}`,
     };
     return;
   }
 
-  uploadStatus.value = {
-    isUploading: true,
-    isSuccess: null,
-    message: 'Uploading images...',
-    validationErrors: {},
+  isUploading.value = true;
+  uploadMessage.value = {
+    type: 'info',
+    text: 'Uploading images...',
   };
 
   try {
-    const data = await imageUpload.uploadFiles(selectedFiles.value);
+    const finalStatuses = await imageUpload.uploadFiles(selectedFiles.value, (statuses) => {
+      fileUploadStatuses.value = statuses;
+    });
 
-    const failedUploads = data.files.filter((file) => !file.success);
-    if (failedUploads.length > 0) {
-      const failMessages = failedUploads
-        .map((file) => `${file.filename || 'Unknown file'}: ${file.error}`)
-        .join(', ');
+    // Update final statuses
+    fileUploadStatuses.value = finalStatuses;
 
-      uploadStatus.value = {
-        isUploading: false,
-        isSuccess: false,
-        message: `Some files failed to upload: ${failMessages}`,
-        validationErrors: {},
-      };
-    } else {
-      uploadStatus.value = {
-        isUploading: false,
-        isSuccess: true,
-        message: data.message || 'Upload successful!',
-        validationErrors: {},
+    // Analyze results
+    const successCount = finalStatuses.filter((status) => status.status === 'success').length;
+    const errorCount = finalStatuses.filter((status) => status.status === 'error').length;
+
+    if (errorCount === 0) {
+      uploadMessage.value = {
+        type: 'success',
+        text: `All ${successCount} images uploaded successfully!`,
       };
 
+      // Clean up successful uploads
       selectedFiles.value.forEach((file) => {
         const previewUrl = imageUpload.getFilePreviewUrl(file);
         imageUpload.revokeFilePreviewUrl(previewUrl);
       });
 
       selectedFiles.value = [];
+      fileUploadStatuses.value = [];
       if (fileInputRef.value) {
         fileInputRef.value.value = '';
       }
+    } else if (successCount === 0) {
+      uploadMessage.value = {
+        type: 'error',
+        text: `All ${errorCount} images failed to upload. Check individual errors below.`,
+      };
+    } else {
+      uploadMessage.value = {
+        type: 'error',
+        text: `${successCount} images uploaded successfully, but ${errorCount} failed. Check errors below.`,
+      };
+
+      // Remove successful uploads from the list
+      const failedIndices = finalStatuses
+        .map((status, index) => (status.status === 'error' ? index : -1))
+        .filter((index) => index !== -1);
+
+      selectedFiles.value = failedIndices
+        .map((index) => selectedFiles.value[index])
+        .filter((file): file is File => Boolean(file));
+      fileUploadStatuses.value = failedIndices
+        .map((index) => finalStatuses[index])
+        .filter((status): status is FileUploadStatus => Boolean(status));
+
+      // Clean up successful uploads
+      finalStatuses.forEach((status, _index) => {
+        if (status.status === 'success' && !failedIndices.includes(_index)) {
+          const previewUrl = imageUpload.getFilePreviewUrl(status.file);
+          imageUpload.revokeFilePreviewUrl(previewUrl);
+        }
+      });
     }
-  } catch (err) {
-    console.error('Upload failed:', err);
-    uploadStatus.value = {
-      isUploading: false,
-      isSuccess: false,
-      message: err instanceof Error ? err.message : 'Failed to upload images. Please try again.',
-      validationErrors: {},
+  } catch (error) {
+    console.error('Upload failed:', error);
+    uploadMessage.value = {
+      type: 'error',
+      text: error instanceof Error ? error.message : 'Failed to upload images. Please try again.',
     };
+  } finally {
+    isUploading.value = false;
   }
 }
 

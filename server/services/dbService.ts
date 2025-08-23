@@ -67,6 +67,60 @@ export class DbService {
     });
   }
 
+  async updatePhoto({
+    id,
+    filename,
+    originalFilename,
+    mimeType,
+    size,
+    description,
+    latitude,
+    longitude,
+    cameraMake,
+    cameraModel,
+    exposureTime,
+    aperture,
+    iso,
+    focalLength,
+    takenAt,
+  }: {
+    id: string;
+    filename?: string;
+    originalFilename?: string;
+    mimeType?: string;
+    size?: number;
+    description?: string;
+    latitude?: string;
+    longitude?: string;
+    cameraMake?: string;
+    cameraModel?: string;
+    exposureTime?: string;
+    aperture?: string;
+    iso?: string;
+    focalLength?: string;
+    takenAt?: number;
+  }) {
+    return await this.client.db
+      .update(this.client.schema.photos)
+      .set({
+        filename,
+        originalFilename,
+        mimeType,
+        size,
+        description,
+        latitude,
+        longitude,
+        cameraMake,
+        cameraModel,
+        exposureTime,
+        aperture,
+        iso,
+        focalLength,
+        takenAt,
+      })
+      .where(eq(this.client.schema.photos.id, id));
+  }
+
   async getAllPhotos(): Promise<ImageMeta[]> {
     return await this.client.db.select().from(this.client.schema.photos);
   }

@@ -1,15 +1,23 @@
 import type { H3Event } from 'h3';
-import { sendError, createError } from 'h3';
-import type { ServerFile, FileValidationResult, UploadResponse } from '~/types/image-upload';
+import { sendError, createError, readMultipartFormData } from 'h3';
+
+import type {
+  ServerFile,
+  FileValidationResult,
+  SingleFileUploadResponse,
+  ExifData,
+} from '~/types/image-upload';
 import {
   FileValidationResultSchema,
-  UploadResponseSchema,
+  SingleFileUploadResponseSchema,
   FileValidationConfig,
+  ExifDataSchema,
 } from '~/types/image-upload';
 import { verifyCloudflareAccessToken } from '~~/server/utils/auth';
 import { DbService } from '~~/server/services/dbService';
 import { S3Service } from '~~/server/services/s3Service';
-import { ImageProcessingService } from '~~/server/services/imageProcessingService';
+import { ImageProcessingService } from '~~/shared/imageProcessingService';
+import { extractExif } from '~~/shared/services/exif';
 
 function validateFile(file: ServerFile): FileValidationResult {
   if (!file.filename) {
@@ -70,80 +78,123 @@ export default defineEventHandler(async (event: H3Event) => {
         event,
         createError({
           statusCode: 400,
-          statusMessage: 'No files were uploaded.',
+          statusMessage: 'No data was uploaded.',
         }),
       );
     }
 
-    const photoService = new DbService(event);
-    const s3Service = new S3Service(event);
-
-    const imageProcessingService = new ImageProcessingService();
-
-    const uploadResults = await Promise.all(
-      formData
-        .filter((file) => file.name === 'image')
-        .map(async (file) => {
-          try {
-            const parsedFile = {
-              name: file.name,
-              filename: file.filename,
-              type: file.type,
-              data: file.data,
-            };
-
-            const result = validateFile(parsedFile as ServerFile);
-
-            if (result.success) {
-              const resizedImageBuffer = await imageProcessingService.resizeImage(file.data);
-              const exifData = await imageProcessingService.extractExif(file.data);
-
-              const fileId = await s3Service.uploadFile(
-                resizedImageBuffer,
-                file.filename || '',
-                file.type || '',
-              );
-              result.url = fileId;
-
-              await photoService.savePhoto({
-                id: fileId,
-                filename: fileId,
-                originalFilename: file.filename || 'unknown',
-                mimeType: file.type || 'application/octet-stream',
-                size: resizedImageBuffer.length,
-                ...exifData,
-              });
-            }
-
-            return FileValidationResultSchema.parse(result);
-          } catch (error) {
-            console.error('Error processing upload:', error);
-            return {
-              success: false,
-              filename: file.filename,
-              error: 'Failed to upload',
-            } as FileValidationResult;
-          }
-        }),
-    );
-
-    if (uploadResults.length === 0) {
+    // Find the image file
+    const imageFile = formData.find((file) => file.name === 'image');
+    if (!imageFile) {
       return sendError(
         event,
         createError({
           statusCode: 400,
-          statusMessage: 'No image files were found in the upload.',
+          statusMessage: 'No image file found in upload.',
         }),
       );
     }
 
-    const response: UploadResponse = {
-      success: true,
-      files: uploadResults,
-      message: 'Image upload processed successfully.',
-    };
+    // Parse EXIF data if provided
+    let exifData: ExifData = {};
+    const exifDataField = formData.find((field) => field.name === 'exifData');
+    if (exifDataField && exifDataField.data) {
+      try {
+        const exifDataString = exifDataField.data.toString('utf-8');
+        const parsedExifData = JSON.parse(exifDataString);
+        exifData = ExifDataSchema.parse(parsedExifData);
+      } catch (error) {
+        console.warn('Failed to parse EXIF data from request:', error);
+        return sendError(
+          event,
+          createError({
+            statusCode: 500,
+            statusMessage: 'Failed to parse EXIF data from request',
+          }),
+        );
+      }
+    }
 
-    return UploadResponseSchema.parse(response);
+    const photoService = new DbService(event);
+    const s3Service = new S3Service(event);
+    const imageProcessingService = new ImageProcessingService();
+
+    try {
+      const parsedFile = {
+        name: imageFile.name,
+        filename: imageFile.filename,
+        type: imageFile.type,
+        data: imageFile.data,
+      };
+
+      const result = validateFile(parsedFile as ServerFile);
+
+      if (result.success) {
+        const resizedImageBuffer = await imageProcessingService.resizeImage(imageFile.data);
+
+        const runtimeConfig = useRuntimeConfig();
+
+        // Extract EXIF data on backend if not provided from frontend
+        const parseExifInFrontend = runtimeConfig.public.parseExifInFrontend;
+
+        if (!parseExifInFrontend && Object.keys(exifData).length === 0) {
+          try {
+            exifData = await extractExif(imageFile.data);
+          } catch (error) {
+            console.error('Failed to extract EXIF data on backend:', error);
+            return sendError(
+              event,
+              createError({
+                statusCode: 400,
+                statusMessage: 'Failed to extract EXIF data from image.',
+              }),
+            );
+          }
+        }
+
+        const fileId = await s3Service.uploadFile(
+          resizedImageBuffer,
+          imageFile.filename || '',
+          imageFile.type || '',
+        );
+        result.url = fileId;
+
+        await photoService.savePhoto({
+          id: fileId,
+          filename: fileId,
+          originalFilename: imageFile.filename || 'unknown',
+          mimeType: imageFile.type || 'application/octet-stream',
+          size: resizedImageBuffer.length,
+          ...exifData,
+        });
+      }
+
+      const validatedResult = FileValidationResultSchema.parse(result);
+
+      const response: SingleFileUploadResponse = {
+        success: validatedResult.success,
+        file: validatedResult,
+        message: validatedResult.success ? 'Image uploaded successfully.' : 'Image upload failed.',
+      };
+
+      return SingleFileUploadResponseSchema.parse(response);
+    } catch (error) {
+      console.error('Error processing upload:', error);
+
+      const errorResult: FileValidationResult = {
+        success: false,
+        filename: imageFile.filename,
+        error: 'Failed to upload',
+      };
+
+      const response: SingleFileUploadResponse = {
+        success: false,
+        file: errorResult,
+        message: 'Failed to process image upload.',
+      };
+
+      return SingleFileUploadResponseSchema.parse(response);
+    }
   } catch (error) {
     console.error('Error processing image upload:', error);
     return sendError(
