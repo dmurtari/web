@@ -1,25 +1,27 @@
 import type { H3Event } from 'h3';
-import type { ImageMeta } from '~~/app/types/image';
-import { DbService } from '~~/server/services/dbService';
+
+import type { ImageMeta } from '~/types/image';
+
+import { getAllPhotos } from '~~/server/utils/database';
+import { handleApiError, createSuccessResponse } from '~~/server/utils/responses';
 
 /**
  * Endpoint to get all photos with their metadata
  */
 export default defineEventHandler(async (event: H3Event) => {
   try {
-    const photoService = new DbService(event);
-    const photos: ImageMeta[] = await photoService.getAllPhotos();
+    const photos: ImageMeta[] = await getAllPhotos(event);
 
-    return {
-      success: true,
+    const photosWithUrls = photos.map((photo) => ({
+      ...photo,
+      url: `/api/images/${photo.id}`,
+    }));
+
+    return createSuccessResponse({
       count: photos.length,
-      photos: photos.map((photo) => ({
-        ...photo,
-        url: `/api/images/${photo.id}`,
-      })),
-    };
+      photos: photosWithUrls,
+    });
   } catch (error) {
-    console.error('Error fetching photos:', error);
-    throw createError({ statusCode: 500, message: 'Failed to fetch photos' });
+    return handleApiError(event, error, 'Failed to fetch photos');
   }
 });

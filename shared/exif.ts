@@ -1,27 +1,14 @@
-import type { ExifData } from './types';
-import { ExifExtractionError } from './types';
+import type { ExpandedTags } from 'exifreader';
+import type { ExifData } from '~/types/image';
 
-// Type definitions for EXIF tags structure
-interface ExifTag {
-  description?: string;
-  value?: string | number;
-}
+export class ExifExtractionError extends Error {
+  override readonly cause?: unknown;
 
-interface ExifTags {
-  exif?: {
-    Make?: ExifTag;
-    Model?: ExifTag;
-    ExposureTime?: ExifTag;
-    ApertureValue?: ExifTag;
-    FocalLength?: ExifTag;
-    ISOSpeedRatings?: ExifTag;
-    DateTimeOriginal?: ExifTag;
-  };
-  gps?: {
-    Latitude?: string | number;
-    Longitude?: string | number;
-  };
-  [key: string]: unknown;
+  constructor(message: string, cause?: unknown) {
+    super(message);
+    this.name = 'ExifExtractionError';
+    this.cause = cause;
+  }
 }
 
 /**
@@ -39,8 +26,7 @@ function normalizeBuffer(imageBuffer: Buffer | ArrayBuffer | Uint8Array): ArrayB
     ) as ArrayBuffer;
   }
 
-  // Handle Buffer (Node.js) by converting to ArrayBuffer
-  const uint8Array = new Uint8Array(imageBuffer as Buffer);
+  const uint8Array = new Uint8Array(imageBuffer);
   return uint8Array.buffer.slice(
     uint8Array.byteOffset,
     uint8Array.byteOffset + uint8Array.byteLength,
@@ -50,38 +36,23 @@ function normalizeBuffer(imageBuffer: Buffer | ArrayBuffer | Uint8Array): ArrayB
 /**
  * Extracts structured EXIF data from raw EXIF tags
  */
-function extractExifDataFromTags(tags: ExifTags): ExifData {
+function extractExifDataFromTags(tags: ExpandedTags): ExifData {
   return {
     cameraMake: tags.exif?.Make?.description,
     cameraModel: tags.exif?.Model?.description,
     exposureTime: tags.exif?.ExposureTime?.description,
     aperture: tags.exif?.ApertureValue?.description,
-    focalLength: (() => {
-      const focalLengthDesc = tags.exif?.FocalLength?.description;
-      if (!focalLengthDesc) return undefined;
-
-      // Extract just the numeric value, removing units like "mm"
-      const numericValue = focalLengthDesc.replace(/[^\d.]/g, '');
-      if (!numericValue) return undefined;
-
-      // Parse as float and round to 1 decimal place
-      const parsed = parseFloat(numericValue);
-      if (isNaN(parsed)) return undefined;
-
-      return parsed.toFixed(1);
-    })(),
+    focalLength: tags.exif?.FocalLengthIn35mmFilm?.description,
     iso:
       tags.exif?.ISOSpeedRatings?.description ||
       (tags.exif?.ISOSpeedRatings?.value ? String(tags.exif.ISOSpeedRatings.value) : undefined),
     takenAt: (() => {
-      if (!tags.exif?.DateTimeOriginal?.description) return undefined;
+      if (!tags.exif?.DateTimeOriginal?.description) {
+        return undefined;
+      }
 
       const dateStr = tags.exif.DateTimeOriginal.description;
-
-      // EXIF dates are often in format "YYYY:MM:DD HH:mm:ss"
-      // Convert to ISO format for better parsing
       const isoDateStr = dateStr.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
-
       const date = new Date(isoDateStr);
       const timestamp = date.valueOf();
 
@@ -104,20 +75,13 @@ export async function extractExif(
   imageBuffer: Buffer | ArrayBuffer | Uint8Array,
 ): Promise<ExifData> {
   try {
-    // Dynamic import to avoid bundling issues
     const ExifReader = (await import('exifreader')).default;
-
-    // Normalize buffer type for consistent processing
     const arrayBuffer = normalizeBuffer(imageBuffer);
-
-    // Extract EXIF tags
     const tags = ExifReader.load(arrayBuffer, { expanded: true });
 
-    // Remove makerNotes to avoid potential issues
     delete tags['makerNotes'];
 
-    // Transform raw tags into structured data
-    return extractExifDataFromTags(tags as ExifTags);
+    return extractExifDataFromTags(tags);
   } catch (error) {
     throw new ExifExtractionError('Failed to extract EXIF data from image', error);
   }

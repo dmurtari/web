@@ -47,18 +47,36 @@
 import { useImages } from '~/composables/useImages';
 import type { ImageMeta } from '~/types/image';
 
-const { images } = useImages();
-const { activeImage, handleClickImage } = useImageCarousel();
-const { isViewingDetails, handleViewDetails } = useImageView();
-const { handleDeleteImage } = useImageDelete(activeImage);
+const { images, getImages, deleteImage } = useImages();
+const { activeImage, isViewingDetails, handleClickImage, handleViewDetails, handleDeleteImage } =
+  useImageGallery(images, getImages, deleteImage);
 
-function useImageCarousel() {
-  const { getImages } = useImages();
-
+function useImageGallery(
+  images: Ref<ImageMeta[]>,
+  getImages: () => Promise<ImageMeta[]>,
+  deleteImage: (id: string) => Promise<void>,
+) {
   const activeImage = useState<ImageMeta | null>('activeImage', () => null);
+  const isViewingDetails = ref<boolean>(false);
 
   function handleClickImage(image: ImageMeta): void {
     activeImage.value = image;
+  }
+
+  function handleViewDetails() {
+    isViewingDetails.value = !isViewingDetails.value;
+  }
+
+  async function handleDeleteImage(imageId: string): Promise<void> {
+    const deleteIndex = images.value.findIndex((image) => image.id === imageId);
+
+    await deleteImage(imageId);
+
+    if (images.value[deleteIndex]) {
+      activeImage.value = images.value[deleteIndex];
+    } else {
+      activeImage.value = null;
+    }
   }
 
   onMounted(async () => {
@@ -70,39 +88,9 @@ function useImageCarousel() {
 
   return {
     activeImage,
-    handleClickImage,
-  };
-}
-
-function useImageView() {
-  const isViewingDetails = ref<boolean>(false);
-
-  function handleViewDetails() {
-    isViewingDetails.value = !isViewingDetails.value;
-  }
-
-  return {
     isViewingDetails,
+    handleClickImage,
     handleViewDetails,
-  };
-}
-
-function useImageDelete(activeImageRef: Ref<ImageMeta | null>) {
-  const { images, deleteImage } = useImages();
-
-  async function handleDeleteImage(imageId: string): Promise<void> {
-    const deleteIndex = images.value.findIndex((image) => image.id === imageId);
-
-    await deleteImage(imageId);
-
-    if (images.value[deleteIndex]) {
-      activeImageRef.value = images.value[deleteIndex];
-    } else {
-      activeImageRef.value = null;
-    }
-  }
-
-  return {
     handleDeleteImage,
   };
 }

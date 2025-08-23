@@ -38,7 +38,7 @@
             <span class="text-sm text-gray-900">{{ image.iso }}</span>
           </div>
           <div v-if="image.focalLength" class="px-4 py-3 flex justify-between">
-            <span class="text-sm font-medium text-gray-500">Focal Length</span>
+            <span class="text-sm font-medium text-gray-500">Focal Length (35mm equivalent)</span>
             <span class="text-sm text-gray-900">{{ image.focalLength }}</span>
           </div>
         </div>

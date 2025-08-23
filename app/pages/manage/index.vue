@@ -58,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import type { FileUploadStatus } from '~/composables/useImageUpload';
+import type { FileUploadStatus } from '~/types/image';
 
 const imageUpload = useImageUpload();
 const fileInputRef = useTemplateRef('fileInputRef');
@@ -100,8 +100,10 @@ function removeFile(index: number) {
     imageUpload.revokeFilePreviewUrl(previewUrl);
   }
 
-  selectedFiles.value = selectedFiles.value.filter((_, i) => i !== index);
-  fileUploadStatuses.value = fileUploadStatuses.value.filter((_, i) => i !== index);
+  selectedFiles.value = selectedFiles.value.filter((_: File, i: number) => i !== index);
+  fileUploadStatuses.value = fileUploadStatuses.value.filter(
+    (_: FileUploadStatus, i: number) => i !== index,
+  );
 }
 
 async function handleSubmit() {

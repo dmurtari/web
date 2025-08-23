@@ -14,12 +14,14 @@ export function useImages() {
 
     const data = await response.json<{
       success: boolean;
-      count: number;
-      photos: ImageMeta[];
+      data: {
+        count: number;
+        photos: ImageMeta[];
+      };
     }>();
 
-    if (data.photos && Array.isArray(data.photos)) {
-      images.value = data.photos;
+    if (data.data?.photos && Array.isArray(data.data.photos)) {
+      images.value = data.data.photos;
     } else {
       images.value = [];
     }

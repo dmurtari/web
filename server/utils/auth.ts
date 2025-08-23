@@ -4,9 +4,11 @@ import { useRuntimeConfig, createError } from '#imports';
 
 /**
  * Verifies a Cloudflare Access JWT token and returns the user payload
+ *
+ * https://developers.cloudflare.com/cloudflare-one/identity/authorization-cookie/validating-json/#javascript-example
+ *
  * @param event
  * @throws
- * https://developers.cloudflare.com/cloudflare-one/identity/authorization-cookie/validating-json/#javascript-example
  */
 export async function verifyCloudflareAccessToken(event: H3Event) {
   if (import.meta.dev) {
