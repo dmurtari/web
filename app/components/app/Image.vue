@@ -5,8 +5,9 @@
     :alt="image.originalFilename || image.filename"
     v-bind="$attrs"
   />
-  <NuxtPicture
+  <NuxtImg
     v-else
+    provider="cloudflare"
     :src="image.url"
     :alt="image.originalFilename || image.filename"
     :imgAttrs="$attrs"
