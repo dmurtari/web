@@ -61,6 +61,10 @@
 import type { FileUploadStatus } from '~/types/image';
 import logger from '~/utils/logger';
 
+useHead({
+  title: 'Photo Upload',
+});
+
 const imageUpload = useImageUpload();
 const fileInputRef = useTemplateRef('fileInputRef');
 

@@ -47,6 +47,10 @@
 import { useImages } from '~/composables/useImages';
 import type { ImageMeta } from '~/types/image';
 
+useHead({
+  title: 'Photo Gallery',
+});
+
 const { images, getImages, deleteImage } = useImages();
 const { activeImage, isViewingDetails, handleClickImage, handleViewDetails, handleDeleteImage } =
   useImageGallery(images, getImages, deleteImage);

@@ -52,7 +52,9 @@
    * Environment Variables
    * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
    */
-  "vars": { "NUXT_PUBLIC_PARSE_EXIF_IN_FRONTEND": true },
+  "vars": {
+    "NUXT_PUBLIC_PARSE_EXIF_IN_FRONTEND": true,
+  },
 
   /**
    * Note: Use secrets to store sensitive data.
