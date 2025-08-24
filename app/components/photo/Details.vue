@@ -47,21 +47,17 @@
 
     <div class="space-y-6">
       <h2 class="text-2xl font-bold text-gray-900 mb-4">Location</h2>
-      <div
-        class="bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 p-8 text-center min-h-[400px] flex items-center justify-center"
-      >
-        <div class="text-gray-500">
-          <p class="text-sm font-medium">Map will be displayed here</p>
-          <p v-if="image.latitude && image.longitude" class="text-xs mt-2">
-            Coordinates: {{ image.latitude }}, {{ image.longitude }}
-          </p>
-        </div>
+      <div class="rounded-lg border-2 border-gray-300 h-[500px] min-w-[400px] overflow-hidden">
+        <PhotoMap :options="mapOptions" :markers="mapMarkers" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import type { MapOptions } from 'maplibre-gl';
+import { Marker } from 'maplibre-gl';
+
 import type { ImageMeta } from '~/types/image';
 
 const { image } = defineProps<{
@@ -77,4 +73,13 @@ const { isAuthenticated } = usePermissions();
 const formatDate = (timestamp: number): string => {
   return new Date(timestamp).toLocaleString();
 };
+
+const mapOptions = computed<Partial<MapOptions>>(() => ({
+  center: [Number(image.longitude), Number(image.latitude)],
+  zoom: 9,
+}));
+
+const mapMarkers = computed<Marker[]>(() => [
+  new Marker().setLngLat([Number(image.longitude), Number(image.latitude)]),
+]);
 </script>
