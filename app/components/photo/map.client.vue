@@ -20,8 +20,18 @@ const {
 }>();
 
 let map: MapType | null = null;
+
 const mapContainer = useTemplateRef<HTMLElement>('mapContainer');
 const mapMarkers = ref<Marker[]>([]);
+
+function handleSetMarkers(newMarkers: Marker[]): void {
+  if (!map) {
+    return;
+  }
+
+  mapMarkers.value.forEach((marker) => marker.remove());
+  newMarkers.forEach((marker) => marker.addTo(map!));
+}
 
 onMounted(async () => {
   if (mapContainer.value == null) {
@@ -39,15 +49,6 @@ onMounted(async () => {
 
   logger.info('Map initialized');
 });
-
-function handleSetMarkers(newMarkers: Marker[]): void {
-  if (!map) {
-    return;
-  }
-
-  mapMarkers.value.forEach((marker) => marker.remove());
-  newMarkers.forEach((marker) => marker.addTo(map!));
-}
 
 onUnmounted(() => {
   if (map) {

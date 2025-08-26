@@ -31,7 +31,7 @@
           </div>
           <div v-if="image.aperture" class="px-4 py-3 flex justify-between">
             <span class="text-sm font-medium text-gray-500">Aperture</span>
-            <span class="text-sm text-gray-900">{{ image.aperture }}</span>
+            <span class="text-sm text-gray-900"> f/{{ image.aperture }}</span>
           </div>
           <div v-if="image.iso" class="px-4 py-3 flex justify-between">
             <span class="text-sm font-medium text-gray-500">ISO</span>
