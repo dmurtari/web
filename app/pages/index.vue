@@ -8,6 +8,7 @@
           class="w-full h-full"
           :image="activeImage"
           @delete="handleDeleteImage(activeImage.id)"
+          @update:description="handleUpdateDescription"
         />
         <PhotoCardLarge v-else :image="activeImage" />
 
@@ -51,15 +52,20 @@ useHead({
   title: 'Photo Gallery',
 });
 
-const { images, getImages, deleteImage } = useImages();
-const { activeImage, isViewingDetails, handleClickImage, handleViewDetails, handleDeleteImage } =
-  useImageGallery(images, getImages, deleteImage);
+const {
+  images,
+  activeImage,
 
-function useImageGallery(
-  images: Ref<ImageMeta[]>,
-  getImages: () => Promise<ImageMeta[]>,
-  deleteImage: (id: string) => Promise<void>,
-) {
+  isViewingDetails,
+  handleClickImage,
+  handleViewDetails,
+  handleDeleteImage,
+  handleUpdateDescription,
+} = useImageGallery();
+
+function useImageGallery() {
+  const { images, getImages, deleteImage, patchImage } = useImages();
+
   const activeImage = useState<ImageMeta | null>('activeImage', () => null);
   const isViewingDetails = ref<boolean>(false);
 
@@ -83,6 +89,14 @@ function useImageGallery(
     }
   }
 
+  async function handleUpdateDescription(description: string): Promise<void> {
+    if (!activeImage.value?.id) {
+      return;
+    }
+
+    await patchImage(activeImage.value.id, { description });
+  }
+
   onMounted(async () => {
     const images = await getImages();
     if (images[0]) {
@@ -91,11 +105,14 @@ function useImageGallery(
   });
 
   return {
+    images,
     activeImage,
     isViewingDetails,
+
     handleClickImage,
     handleViewDetails,
     handleDeleteImage,
+    handleUpdateDescription,
   };
 }
 </script>

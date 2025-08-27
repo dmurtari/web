@@ -36,12 +36,16 @@ export async function updatePhoto(
   event: H3Event,
   id: string,
   updates: Partial<Omit<ImageMeta, 'id' | 'url' | 'uploadedAt'>>,
-) {
+): Promise<ImageMeta> {
   logger.info('Updating photo in database', { photoId: id, updates: Object.keys(updates) });
   return await withDatabase(event, async ({ db, schema }) => {
-    const result = await db.update(schema.photos).set(updates).where(eq(schema.photos.id, id));
+    const result = await db
+      .update(schema.photos)
+      .set(updates)
+      .where(eq(schema.photos.id, id))
+      .returning();
     logger.debug('Photo updated successfully', { photoId: id });
-    return result;
+    return ImageMetaSchema.parse(result[0]);
   });
 }
 

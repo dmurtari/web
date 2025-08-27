@@ -14,6 +14,16 @@
         <div class="px-4 py-3">
           <AppButton variant="danger" @click="emit('delete')"> Delete </AppButton>
         </div>
+
+        <div class="px-4 py-3 space-y-3 flex justify-between gap-1">
+          <input
+            v-model="description"
+            type="text"
+            class="w-full h-full px-3 py-2 mb-0 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            placeholder="Description"
+          />
+          <AppButton @click="emit('update:description', description)"> Save </AppButton>
+        </div>
       </div>
 
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -66,9 +76,11 @@ const { image } = defineProps<{
 
 const emit = defineEmits<{
   delete: [];
+  'update:description': [string];
 }>();
 
 const { isAuthenticated } = usePermissions();
+const { description } = useDescriptionForm(image);
 
 const formatDate = (timestamp: number): string => {
   return new Date(timestamp).toLocaleString();
@@ -82,4 +94,20 @@ const mapOptions = computed<Partial<MapOptions>>(() => ({
 const mapMarkers = computed<Marker[]>(() => [
   new Marker().setLngLat([Number(image.longitude), Number(image.latitude)]),
 ]);
+
+function useDescriptionForm(imageRef: MaybeRef<ImageMeta>) {
+  const description = ref<string>('');
+
+  watch(
+    () => imageRef,
+    () => {
+      const image = toValue(imageRef);
+      description.value = image.description ?? '';
+    },
+  );
+
+  return {
+    description,
+  };
+}
 </script>

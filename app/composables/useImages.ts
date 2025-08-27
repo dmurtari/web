@@ -41,10 +41,36 @@ export function useImages() {
     images.value = images.value.filter((image) => image.id !== id);
   }
 
+  async function patchImage(id: string, image: Partial<ImageMeta>): Promise<ImageMeta> {
+    const response = await fetch(`/api/images/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(image),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update image: ${response.status}`);
+    }
+
+    const updatedImage = await response.json<ImageMeta>();
+
+    images.value = images.value.map((image) => {
+      if (image.id === id) {
+        return updatedImage;
+      }
+      return image;
+    });
+
+    return updatedImage;
+  }
+
   return {
     images,
 
     getImages,
     deleteImage,
+    patchImage,
   };
 }
