@@ -1,5 +1,5 @@
 <template>
-  <div ref="mapContainer" class="w-full h-full" />
+  <div id="map" ref="mapContainer" class="w-full h-full" />
 </template>
 
 <script setup lang="ts">
@@ -11,7 +11,6 @@ const {
   options = {
     center: [0, 0],
     zoom: 2,
-    style: 'https://tiles.openfreemap.org/styles/liberty',
   },
   markers = [],
 } = defineProps<{
@@ -34,14 +33,19 @@ function handleSetMarkers(newMarkers: Marker[]): void {
 }
 
 onMounted(async () => {
+  await nextTick();
+
   if (mapContainer.value == null) {
     logger.error('Map container does not exist');
+    return;
   }
 
   const { Map } = await import('maplibre-gl');
 
   map = new Map({
-    ...options,
+    style: 'https://tiles.openfreemap.org/styles/liberty',
+    center: options.center,
+    zoom: options.zoom,
     container: mapContainer.value!,
   });
 
@@ -84,6 +88,7 @@ watch(
   },
   {
     deep: true,
+    immediate: true,
   },
 );
 </script>

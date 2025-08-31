@@ -58,7 +58,14 @@
     <div class="space-y-6">
       <h2 class="text-2xl font-bold text-gray-900 mb-4">Location</h2>
       <div class="rounded-lg border-2 border-gray-300 h-[500px] min-w-[400px] overflow-hidden">
-        <PhotoMap :options="mapOptions" :markers="mapMarkers" />
+        <ClientOnly>
+          <PhotoMap :options="mapOptions" :markers="mapMarkers" />
+          <template #fallback>
+            <div class="w-full h-full flex items-center justify-center bg-gray-100">
+              <div class="text-gray-500">Loading map...</div>
+            </div>
+          </template>
+        </ClientOnly>
       </div>
     </div>
   </div>
