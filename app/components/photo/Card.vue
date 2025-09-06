@@ -5,7 +5,7 @@
       'border-2 border-blue-500 bg-blue-50/10': active,
     }"
   >
-    <AppImage v-if="image.url" class="max-h-full" :image />
+    <AppImage v-if="image.url" class="max-h-full max-w-full" :image />
   </div>
 </template>
 

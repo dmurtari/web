@@ -1,12 +1,11 @@
 import type { H3Event } from 'h3';
-import type { ServerFile, UploadResponse, ExifData } from '~/types/image';
+import { type ServerFile, type UploadResponse, type ExifData, ExifDataSchema } from '~/types/image';
 
 import { resizeImage } from '~~/shared/image';
 
 import { savePhoto } from '~~/server/utils/database';
 import { uploadFile } from '~~/server/utils/storage';
 import { validateFile } from '~~/server/utils/validation';
-import { processExifData, parseExifFromFormData } from '~~/server/utils/exif';
 import logger from '~~/server/utils/logger';
 
 export interface UploadFileData {
@@ -27,6 +26,7 @@ export async function processImageUpload(
   event: H3Event,
   imageFile: UploadFileData,
   frontendExifData: ExifData,
+  lqipString: string,
   options: ProcessUploadOptions,
 ): Promise<UploadResponse> {
   try {
@@ -65,32 +65,40 @@ export async function processImageUpload(
       filename: imageFile.filename,
       newSize: resizedImageBuffer.length,
     });
-    logger.debug('Processing EXIF data', {
-      filename: imageFile.filename,
-      parseInFrontend: options.parseExifInFrontend,
-    });
-    const exifResult = await processExifData(
-      imageFile.data,
-      frontendExifData,
-      options.parseExifInFrontend,
-    );
 
-    if (!exifResult.success) {
-      logger.warn('EXIF processing failed', {
-        filename: imageFile.filename,
-        error: exifResult.error,
-      });
-      return {
-        success: false,
-        file: {
-          success: false,
-          filename: imageFile.filename,
-          error: exifResult.error || 'Failed to process EXIF data',
-        },
-        message: 'Image upload failed.',
+    let exifResult: ExifProcessingResult = { success: false, data: {} };
+
+    if (options.parseExifInFrontend) {
+      const validatedData = ExifDataSchema.parse(frontendExifData);
+
+      exifResult = {
+        success: true,
+        data: validatedData,
       };
+    } else {
+      logger.debug('Processing EXIF data', {
+        filename: imageFile.filename,
+      });
+      const exifResult = await processExifData(imageFile.data);
+
+      if (!exifResult.success) {
+        logger.warn('EXIF processing failed', {
+          filename: imageFile.filename,
+          error: exifResult.error,
+        });
+        return {
+          success: false,
+          file: {
+            success: false,
+            filename: imageFile.filename,
+            error: exifResult.error || 'Failed to process EXIF data',
+          },
+          message: 'Image upload failed.',
+        };
+      }
+      logger.debug('EXIF processing successful', { filename: imageFile.filename });
     }
-    logger.debug('EXIF processing successful', { filename: imageFile.filename });
+
     logger.debug('Uploading file to storage', { filename: imageFile.filename });
     const fileId = await uploadFile(
       event,
@@ -109,6 +117,7 @@ export async function processImageUpload(
       originalFilename: imageFile.filename || 'unknown',
       mimeType: imageFile.type || 'application/octet-stream',
       size: resizedImageBuffer.length,
+      lqip: lqipString,
       ...exifResult.data,
     });
     logger.info('Photo metadata saved to database', { fileId });
@@ -149,12 +158,14 @@ export function extractUploadData(
 ): {
   imageFile?: UploadFileData;
   exifData: ExifData;
+  lqipString: string;
   error?: string;
 } {
   const imageFile = formData.find((file) => file.name === 'image');
   if (!imageFile) {
     return {
       exifData: {},
+      lqipString: '',
       error: 'No image file found in upload.',
     };
   }
@@ -165,11 +176,23 @@ export function extractUploadData(
   if (exifDataField && !exifData) {
     return {
       exifData: {},
+      lqipString: '',
       error: 'Invalid EXIF data format',
     };
   }
 
-  return {
+  const lqipField = formData.find((field) => field.name === 'lqip');
+  const lqipString = lqipField?.data?.toString('utf-8');
+
+  if (lqipField && !lqipString) {
+    return {
+      exifData: {},
+      lqipString: '',
+      error: 'Invalid LQIP data format',
+    };
+  }
+
+  const uploadData = {
     imageFile: {
       name: imageFile.name,
       filename: imageFile.filename,
@@ -177,5 +200,10 @@ export function extractUploadData(
       data: imageFile.data!,
     },
     exifData: exifData || {},
+    lqipString: lqipString || '',
   };
+
+  logger.debug('Extracted upload data', uploadData);
+
+  return uploadData;
 }

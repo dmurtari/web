@@ -1,5 +1,5 @@
 <template>
-  <AppImage class="object-contain w-full h-full" :image />
+  <AppImage class="object-contain max-h-full max-w-full" :image />
 </template>
 
 <script setup lang="ts">

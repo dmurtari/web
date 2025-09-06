@@ -17,6 +17,10 @@ export default defineEventHandler(async (event: H3Event) => {
     logger.info('Processing image upload request');
     await verifyCloudflareAccessToken(event);
 
+    const runtimeConfig = useRuntimeConfig();
+    const parseExifInFrontend = runtimeConfig.public.parseExifInFrontend;
+    logger.info('Should have parsed EXIF in the frontend?', parseExifInFrontend);
+
     validateContentType(event, 'multipart/form-data');
 
     const formData = await readMultipartFormData(event);
@@ -24,7 +28,7 @@ export default defineEventHandler(async (event: H3Event) => {
       logger.warn('Upload attempt with no form data');
       return createErrorResponse('No data was uploaded.', 400);
     }
-    const { imageFile, exifData, error } = extractUploadData(formData);
+    const { imageFile, exifData, lqipString, error } = extractUploadData(formData);
     if (error) {
       logger.warn('Upload data validation failed:', error);
       return createErrorResponse(error, 400);
@@ -34,14 +38,23 @@ export default defineEventHandler(async (event: H3Event) => {
       logger.warn('No valid image file found in upload');
       return createErrorResponse('No valid image file found.', 400);
     }
-    const runtimeConfig = useRuntimeConfig();
-    const parseExifInFrontend = runtimeConfig.public.parseExifInFrontend === 'true';
+
+    if (parseExifInFrontend && !exifData) {
+      logger.warn('EXIF data missing despite frontend parsing enabled');
+      return createErrorResponse('EXIF data is required but missing.', 400);
+    }
+
+    if (!lqipString) {
+      logger.warn('LQIP string missing from upload');
+      return createErrorResponse('LQIP string is required but missing.', 400);
+    }
+
     logger.info('Starting image processing', {
       filename: imageFile.filename,
       size: imageFile.data?.length,
     });
 
-    const result = await processImageUpload(event, imageFile, exifData, {
+    const result = await processImageUpload(event, imageFile, exifData, lqipString, {
       parseExifInFrontend,
     });
 

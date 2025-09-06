@@ -79,7 +79,7 @@ export default defineNuxtConfig({
     cloudflarePolicyAud: '',
     cloudflareTeamUrl: '',
     public: {
-      parseExifInFrontend: '',
+      parseExifInFrontend: true,
     },
   },
 });

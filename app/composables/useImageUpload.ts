@@ -6,6 +6,7 @@ import { UploadFileSchema, UploadResponseSchema, FileValidationConfig } from '~/
 import { extractExif, ExifExtractionError } from '~~/shared/exif';
 
 import { formatFileSize } from '~/utils/helpers';
+import { packColor10Bit, packColor11Bit } from '~~/shared/color';
 
 export function useImageUpload() {
   function validateFile(file: File): { isValid: boolean; error?: string } {
@@ -30,13 +31,19 @@ export function useImageUpload() {
     return await extractExif(arrayBuffer);
   }
 
-  async function uploadSingleFile(file: File, exifData?: ExifData): Promise<UploadResponse> {
+  async function uploadSingleFile(
+    file: File,
+    lqipString: string,
+    exifData?: ExifData,
+  ): Promise<UploadResponse> {
     const formData = new FormData();
     formData.append('image', file);
 
     if (exifData && Object.keys(exifData).length > 0) {
       formData.append('exifData', JSON.stringify(exifData));
     }
+
+    formData.append('lqip', lqipString);
 
     const response = await fetch('/api/images', {
       method: 'POST',
@@ -49,6 +56,49 @@ export function useImageUpload() {
 
     const data = await response.json();
     return UploadResponseSchema.parse(data);
+  }
+
+  /**
+   * https://github.com/frzi/lqip-css/
+   */
+  async function generateLqipString(file: File): Promise<string> {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 3;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Failed to get canvas context');
+    }
+
+    const bitmap = await createImageBitmap(file, {
+      resizeHeight: ctx.canvas.height,
+      resizeQuality: 'low',
+      resizeWidth: ctx.canvas.width,
+    });
+
+    ctx.drawImage(bitmap, 0, 0, ctx.canvas.width, ctx.canvas.height);
+    bitmap.close();
+
+    const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+    const pixels: { r: number; g: number; b: number }[] = [];
+
+    for (let a = 0; a < imageData.data.length; a += 4) {
+      pixels.push({
+        r: imageData.data[a]!,
+        g: imageData.data[a + 1]!,
+        b: imageData.data[a + 2]!,
+      });
+    }
+
+    const [c0, c1, c2] = [pixels[0], pixels[4], pixels[8]];
+
+    const pc0 = packColor11Bit(c0!);
+    const pc1 = packColor11Bit(c1!);
+    const pc2 = packColor10Bit(c2!);
+    const combined = (BigInt(pc0) << 21n) | (BigInt(pc1) << 10n) | BigInt(pc2);
+    const hex = `#${combined.toString(16).padStart(8, '0')}`;
+
+    logger.info('LQIP generated:', { hex });
+    return hex;
   }
 
   async function uploadFiles(
@@ -90,7 +140,9 @@ export function useImageUpload() {
           }
         }
 
-        const result = await uploadSingleFile(file, exifData);
+        const lqip = await generateLqipString(file);
+
+        const result = await uploadSingleFile(file, lqip, exifData);
 
         currentStatus.status = result.success ? 'success' : 'error';
         currentStatus.result = result;

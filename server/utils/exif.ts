@@ -13,22 +13,10 @@ export interface ExifProcessingResult {
 }
 
 /**
- * Processes EXIF data from either frontend-provided data or by extracting from image buffer
+ * Processes EXIF data from image buffer
  */
-export async function processExifData(
-  imageBuffer: Buffer,
-  frontendExifData?: ExifData,
-  parseInFrontend: boolean = false,
-): Promise<ExifProcessingResult> {
+export async function processExifData(imageBuffer: Buffer): Promise<ExifProcessingResult> {
   try {
-    if (parseInFrontend && frontendExifData && Object.keys(frontendExifData).length > 0) {
-      const validatedData = ExifDataSchema.parse(frontendExifData);
-      return {
-        success: true,
-        data: validatedData,
-      };
-    }
-
     const extractedData = await extractExif(imageBuffer);
     return {
       success: true,

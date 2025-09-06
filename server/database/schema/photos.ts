@@ -7,6 +7,7 @@ export const photos = sqliteTable('photos', {
   uploadedAt: integer('uploaded_at').notNull().default(Date.now()),
   mimeType: text('mime_type').notNull(),
   size: integer('size').notNull(),
+  lqip: text('lqip'),
   description: text('description'),
   latitude: text('latitude'),
   longitude: text('longitude'),

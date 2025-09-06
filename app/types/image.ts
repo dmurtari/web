@@ -75,6 +75,7 @@ export const ImageMetaSchema = z
     uploadedAt: z.number().default(() => Date.now()),
     mimeType: z.string(),
     size: z.number(),
+    lqip: optionalNullableString(),
     url: z.string().optional(),
     description: optionalNullableString(),
   })

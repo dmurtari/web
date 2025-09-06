@@ -22,6 +22,13 @@
       "when": 1755403659745,
       "tag": "0002_natural_wrecker",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1757137813494,
+      "tag": "0003_faithful_clea",
+      "breakpoints": true
     }
   ]
 }
