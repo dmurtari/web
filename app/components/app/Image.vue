@@ -1,6 +1,5 @@
 <template>
   <img
-    v-if="isLocal"
     :src="image.url"
     :alt="image.originalFilename || image.filename"
     :style="{
@@ -8,7 +7,7 @@
     }"
     v-bind="$attrs"
   />
-  <NuxtImg
+  <!-- <NuxtImg
     v-else
     provider="cloudflare"
     :src="image.url"
@@ -18,7 +17,7 @@
       '--lqip': image.lqip,
     }"
     v-bind="$attrs"
-  />
+  /> -->
 </template>
 
 <script setup lang="ts">
@@ -28,7 +27,7 @@ defineOptions({
   inheritAttrs: false,
 });
 
-const isLocal = ref<boolean>(import.meta.dev);
+// const isLocal = ref<boolean>(import.meta.dev);
 
 const { image } = defineProps<{
   image: ImageMeta;
