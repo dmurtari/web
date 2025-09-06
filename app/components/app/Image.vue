@@ -14,6 +14,9 @@
     :src="image.url"
     :alt="image.originalFilename || image.filename"
     :imgAttrs="$attrs"
+    :style="{
+      '--lqip': image.lqip,
+    }"
     v-bind="$attrs"
   />
 </template>
