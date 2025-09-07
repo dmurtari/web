@@ -1,23 +1,25 @@
 <template>
-  <img
-    :src="image.url"
-    :alt="image.originalFilename || image.filename"
-    :style="{
-      '--lqip': image.lqip,
-    }"
-    v-bind="$attrs"
-  />
-  <!-- <NuxtImg
-    v-else
+  <NuxtImg
+    v-slot="{ src, isLoaded }"
     provider="cloudflare"
+    :modifiers="{ fit: 'contain' }"
     :src="image.url"
     :alt="image.originalFilename || image.filename"
-    :imgAttrs="$attrs"
-    :style="{
-      '--lqip': image.lqip,
-    }"
-    v-bind="$attrs"
-  /> -->
+    :custom="true"
+  >
+    <img
+      v-if="isLoaded"
+      :src="src"
+      :alt="image.originalFilename || image.filename"
+      v-bind="$attrs"
+    />
+    <div
+      v-else
+      :style="{
+        '--lqip': image.lqip,
+      }"
+    />
+  </NuxtImg>
 </template>
 
 <script setup lang="ts">
@@ -26,8 +28,6 @@ import type { ImageMeta } from '~/types/image';
 defineOptions({
   inheritAttrs: false,
 });
-
-// const isLocal = ref<boolean>(import.meta.dev);
 
 const { image } = defineProps<{
   image: ImageMeta;
