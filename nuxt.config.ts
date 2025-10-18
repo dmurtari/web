@@ -19,6 +19,7 @@ export default defineNuxtConfig({
     cloudflare: {
       baseURL: 'https://kazusan.me',
     },
+    domains: ['kazusan.me'],
   },
 
   typescript: {

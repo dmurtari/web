@@ -55,8 +55,8 @@ useHead({
 const {
   images,
   activeImage,
-
   isViewingDetails,
+
   handleClickImage,
   handleViewDetails,
   handleDeleteImage,
@@ -134,14 +134,17 @@ function useImageGallery() {
   0% {
     --left-fade: 0;
   }
+
   10%,
   100% {
     --left-fade: 1rem;
   }
+
   0%,
   90% {
     --right-fade: 1rem;
   }
+
   100% {
     --right-fade: 0;
   }
