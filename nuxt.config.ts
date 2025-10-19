@@ -17,9 +17,21 @@ export default defineNuxtConfig({
 
   image: {
     cloudflare: {
-      baseURL: 'https://kazusan.me',
+      baseURL: 'https://images.kazusan.me',
+      modifiers: {
+        format: 'webp',
+        quality: 80,
+      },
     },
-    domains: ['kazusan.me'],
+    domains: ['images.kazusan.me', 'localhost'],
+    screens: {
+      xs: 320,
+      sm: 640,
+      md: 768,
+      lg: 1024,
+      xl: 1280,
+      xxl: 1536,
+    },
   },
 
   typescript: {

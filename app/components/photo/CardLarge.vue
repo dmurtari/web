@@ -1,5 +1,13 @@
 <template>
-  <AppImage class="object-contain max-h-full max-w-full" :image />
+  <AppImage
+    class="object-contain max-h-full max-w-full"
+    :image
+    :maxWidth="1920"
+    :maxHeight="1080"
+    :quality="90"
+    fit="contain"
+    sizes="1200px"
+  />
 </template>
 
 <script setup lang="ts">

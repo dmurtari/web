@@ -11,9 +11,12 @@ export default defineEventHandler(async (event: H3Event) => {
     logger.info('Processing request to list all photos');
     const photos: ImageMeta[] = await getAllPhotos(event);
 
+    // Environment-aware URL generation
+    const isDevelopment = process.env.NODE_ENV === 'development';
+
     const photosWithUrls = photos.map((photo) => ({
       ...photo,
-      url: `/api/images/${photo.id}`,
+      url: isDevelopment ? `/api/images/${photo.id}` : `/uploads/${photo.id}`,
     }));
 
     logger.info(`Successfully fetched ${photos.length} photos`);

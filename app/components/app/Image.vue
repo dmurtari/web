@@ -1,11 +1,14 @@
 <template>
   <NuxtImg
+    v-if="useCloudflareTransforms"
     v-slot="{ src, isLoaded }"
     provider="cloudflare"
-    :modifiers="{ fit: 'contain' }"
+    :modifiers="computedModifiers"
     :src="image.url"
     :alt="image.originalFilename || image.filename"
-    :custom="true"
+    :width="width"
+    :height="height"
+    :sizes="sizes"
   >
     <img
       v-if="isLoaded"
@@ -20,6 +23,9 @@
       }"
     />
   </NuxtImg>
+
+  <!-- Fallback for local development -->
+  <img v-else :src="image.url" :alt="image.originalFilename || image.filename" v-bind="$attrs" />
 </template>
 
 <script setup lang="ts">
@@ -29,9 +35,40 @@ defineOptions({
   inheritAttrs: false,
 });
 
-const { image } = defineProps<{
+interface Props {
   image: ImageMeta;
-}>();
+  width?: number;
+  height?: number;
+  maxWidth?: number;
+  maxHeight?: number;
+  sizes?: string;
+  quality?: number;
+  fit?: 'contain' | 'cover' | 'crop' | 'scale-down';
+}
+
+const {
+  image,
+  width = undefined,
+  height = undefined,
+  maxWidth = undefined,
+  maxHeight = undefined,
+  sizes = undefined,
+  quality = 80,
+  fit = 'contain',
+} = defineProps<Props>();
+
+const useCloudflareTransforms = computed<boolean | undefined>(() => {
+  return !import.meta.dev && image.url?.includes('images.kazusan.me');
+});
+
+const computedModifiers = computed(() => ({
+  fit,
+  quality,
+  ...(width && { width }),
+  ...(height && { height }),
+  ...(maxWidth && { w: maxWidth }),
+  ...(maxHeight && { h: maxHeight }),
+}));
 </script>
 
 <style scoped>

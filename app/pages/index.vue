@@ -10,7 +10,12 @@
           @delete="handleDeleteImage(activeImage.id)"
           @update:description="handleUpdateDescription"
         />
-        <PhotoCardLarge v-else :image="activeImage" />
+        <Suspense v-else>
+          <PhotoCardLarge :image="activeImage" />
+          <template #fallback>
+            <div class="text-gray-500">Loading...</div>
+          </template>
+        </Suspense>
 
         <div class="absolute top-2 right-2 z-10">
           <button
