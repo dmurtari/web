@@ -30,7 +30,7 @@
           </button>
         </div>
       </template>
-      <div v-else class="text-gray-500 text-lg">Click an image to view</div>
+      <div v-else-if="!isLoading" class="text-gray-500 text-lg">Click an image to view</div>
     </div>
 
     <!-- Photo Scroller -->
@@ -61,6 +61,7 @@ const {
   images,
   activeImage,
   isViewingDetails,
+  isLoading,
 
   handleClickImage,
   handleViewDetails,
@@ -73,6 +74,7 @@ function useImageGallery() {
 
   const activeImage = useState<ImageMeta | null>('activeImage', () => null);
   const isViewingDetails = ref<boolean>(false);
+  const isLoading = ref<boolean>(true);
 
   function handleClickImage(image: ImageMeta): void {
     activeImage.value = image;
@@ -106,6 +108,7 @@ function useImageGallery() {
     const images = await getImages();
     if (images[0]) {
       activeImage.value = images[0];
+      isLoading.value = false;
     }
   });
 
@@ -113,6 +116,7 @@ function useImageGallery() {
     images,
     activeImage,
     isViewingDetails,
+    isLoading,
 
     handleClickImage,
     handleViewDetails,

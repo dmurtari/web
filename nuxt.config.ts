@@ -13,26 +13,7 @@ export default defineNuxtConfig({
     },
   },
 
-  modules: ['@nuxt/eslint', '@nuxt/icon', '@nuxt/fonts', '@nuxt/image', 'nitro-cloudflare-dev'],
-
-  image: {
-    cloudflare: {
-      baseURL: 'https://images.kazusan.me',
-      modifiers: {
-        format: 'webp',
-        quality: 80,
-      },
-    },
-    domains: ['images.kazusan.me', 'localhost'],
-    screens: {
-      xs: 320,
-      sm: 640,
-      md: 768,
-      lg: 1024,
-      xl: 1280,
-      xxl: 1536,
-    },
-  },
+  modules: ['@nuxt/eslint', '@nuxt/icon', '@nuxt/fonts', 'nitro-cloudflare-dev'],
 
   typescript: {
     typeCheck: true,

@@ -6,7 +6,6 @@
     :maxHeight="1080"
     :quality="90"
     fit="contain"
-    sizes="1200px"
   />
 </template>
 

@@ -16,7 +16,9 @@ export default defineEventHandler(async (event: H3Event) => {
 
     const photosWithUrls = photos.map((photo) => ({
       ...photo,
-      url: isDevelopment ? `/api/images/${photo.id}` : `/uploads/${photo.id}`,
+      url: isDevelopment
+        ? `/api/images/${photo.id}`
+        : `https://images.kazusan.me/uploads/${photo.id}`,
     }));
 
     logger.info(`Successfully fetched ${photos.length} photos`);

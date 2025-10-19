@@ -1,31 +1,30 @@
 <template>
-  <NuxtImg
-    v-if="useCloudflareTransforms"
-    v-slot="{ src, isLoaded }"
-    provider="cloudflare"
-    :modifiers="computedModifiers"
-    :src="image.url"
+  <!-- Hidden image to trigger loading -->
+  <img
+    v-if="!imageLoaded"
+    :src="transformedSrc || image.url"
     :alt="image.originalFilename || image.filename"
-    :width="width"
-    :height="height"
-    :sizes="sizes"
-  >
-    <img
-      v-if="isLoaded"
-      :src="src"
-      :alt="image.originalFilename || image.filename"
-      v-bind="$attrs"
-    />
-    <div
-      v-else
-      :style="{
-        '--lqip': image.lqip,
-      }"
-    />
-  </NuxtImg>
+    class="absolute inset-0 opacity-0 pointer-events-none"
+    @load="handleLoad"
+  />
 
-  <!-- Fallback for local development -->
-  <img v-else :src="image.url" :alt="image.originalFilename || image.filename" v-bind="$attrs" />
+  <!-- Visible image when loaded -->
+  <img
+    v-if="imageLoaded"
+    :src="transformedSrc || image.url"
+    :alt="image.originalFilename || image.filename"
+    class="transition-opacity duration-300 opacity-100"
+    v-bind="$attrs"
+  />
+
+  <!-- LQIP placeholder while loading -->
+  <div
+    v-if="!imageLoaded && image.lqip"
+    :style="{
+      '--lqip': image.lqip,
+    }"
+    v-bind="$attrs"
+  />
 </template>
 
 <script setup lang="ts">
@@ -41,7 +40,6 @@ interface Props {
   height?: number;
   maxWidth?: number;
   maxHeight?: number;
-  sizes?: string;
   quality?: number;
   fit?: 'contain' | 'cover' | 'crop' | 'scale-down';
 }
@@ -52,23 +50,48 @@ const {
   height = undefined,
   maxWidth = undefined,
   maxHeight = undefined,
-  sizes = undefined,
   quality = 80,
   fit = 'contain',
 } = defineProps<Props>();
 
-const useCloudflareTransforms = computed<boolean | undefined>(() => {
+const useCloudflareTransforms = computed(() => {
   return !import.meta.dev && image.url?.includes('images.kazusan.me');
 });
 
-const computedModifiers = computed(() => ({
-  fit,
-  quality,
-  ...(width && { width }),
-  ...(height && { height }),
-  ...(maxWidth && { w: maxWidth }),
-  ...(maxHeight && { h: maxHeight }),
-}));
+const transformedSrc = computed(() => {
+  if (!useCloudflareTransforms.value || !image.url) {
+    return null;
+  }
+
+  const params = [];
+
+  params.push('f=webp');
+  params.push(`q=${quality}`);
+  params.push(`fit=${fit}`);
+
+  if (width) params.push(`w=${width}`);
+  if (height) params.push(`h=${height}`);
+  if (maxWidth && !width) params.push(`w=${maxWidth}`);
+  if (maxHeight && !height) params.push(`h=${maxHeight}`);
+
+  const transformParams = params.join(',');
+  const urlPath = image.url.replace('https://images.kazusan.me', '');
+  const transformUrl = `https://images.kazusan.me/cdn-cgi/image/${transformParams}${urlPath}`;
+  return transformUrl;
+});
+
+const imageLoaded = ref(false);
+
+function handleLoad() {
+  imageLoaded.value = true;
+}
+
+watch(
+  () => transformedSrc.value || image.url,
+  () => {
+    imageLoaded.value = false;
+  },
+);
 </script>
 
 <style scoped>
